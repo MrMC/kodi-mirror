@@ -408,6 +408,10 @@ void XBMCClientWrapperImpl::populateMultiRemoteModeMap(){
 }
 
 @implementation XBMCClientWrapper
+{
+  XBMCClientWrapperImpl *mp_impl;
+}
+  
 - (id) init {
   return [self initWithMode:DEFAULT_MODE serverAddress:@"localhost" port:9777 verbose: false];
 }

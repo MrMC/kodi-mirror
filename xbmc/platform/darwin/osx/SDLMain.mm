@@ -561,7 +561,8 @@ int main(int argc, char *argv[])
   status = SDL_main(gArgc, gArgv);
   SDL_Quit();
 
-  [xbmc_delegate applicationWillTerminate:NULL];
+  NSNotification *notification = nullptr;
+  [xbmc_delegate applicationWillTerminate:notification];
   [xbmc_delegate release];
   [pool release];
 

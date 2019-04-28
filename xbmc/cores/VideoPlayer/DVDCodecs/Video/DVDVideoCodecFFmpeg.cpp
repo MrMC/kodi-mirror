@@ -23,6 +23,8 @@
 #include "utils/StringUtils.h"
 #include <memory>
 
+// turn off ffmpeg deprecated warning spew
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mastering_display_metadata.h>

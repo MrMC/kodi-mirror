@@ -63,9 +63,7 @@ typedef enum {
 } eRemoteMode;
 
 
-@interface XBMCClientWrapper : NSObject{
-	struct XBMCClientWrapperImpl* mp_impl;
-}
+@interface XBMCClientWrapper : NSObject
 - (id) initWithMode:(eRemoteMode) f_mode serverAddress:(NSString*) fp_server port:(int) f_port verbose:(bool) f_verbose;
 - (void) setUniversalModeTimeout:(double) f_timeout;
 
