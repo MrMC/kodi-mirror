@@ -379,6 +379,12 @@ public:
   static const int VIDEOLIBRARY_PLOTS_SHOW_UNWATCHED_TVSHOWEPISODES = 1;
   static const int VIDEOLIBRARY_THUMB_SHOW_UNWATCHED_EPISODE = 2;
 
+  // NWMN settings strings
+  static const std::string MN_URL;
+  static const std::string MN_MACHINE_ID;
+  static const std::string MN_LOCATION_ID;
+  static const std::string MN_VERTICAL;
+
   /*!
    \brief Creates a new settings wrapper around a new settings manager.
 

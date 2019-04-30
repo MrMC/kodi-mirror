@@ -1,0 +1,49 @@
+{
+	"assignment":	{
+		"group":"3",
+		"member":"2",
+		"retail_location":"4",
+		"playlist":"2"
+	},
+	"machine":	{
+		"id":"1147",
+		"commandline":"foo bar baz\r\nfoo bar\r\nfoo",
+		"name":"Name of Machine",
+		"description":"Some description",
+		"sn":"1234567890",
+		"warrenty_nr":"1234567890",
+		"ethernet_id":"1234567890",
+		"wireless_id":"1234567890",
+		"purchase_date":"09/03/2012",
+		"vendor":"Dummy",
+		"hw_version":"abcde",
+		"timezone":"2",
+		"status":"3"
+	},
+	"location":	{
+		"id":"10140003"
+	},
+	"url":		{
+		"feed":"http://www.nationwidemember.com"
+        },
+	"settings":	{
+		"update":"1",
+		"software_version":"2",
+		"cf_bundle_version":"0.2.5a",
+		"automatic_download_of_video_content":"1",
+		"update_interval":"123456",
+		"update_time":"123456",
+		"network":	{
+			"dhcp":"1"
+		},
+		"memberNet":"1",
+		"vendorCommercials":"1",
+		"HdContent":"0",
+		"memberCommercials":"1",
+		"movieTrailers":"1",
+		"promoCampaigns":"1",
+		"nationwideBroadcast":"0",
+		"imagiNationwideHD":"1",
+		"primeMediaCommercial":"0"
+	}
+}

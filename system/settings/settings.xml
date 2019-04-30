@@ -863,6 +863,30 @@
         </setting>
       </group>
     </category>
+    <category id="MN" label="membernet" help="">
+      <group id="1">
+        <setting id="mn.location_id" type="string" label="20026" help="36115">
+          <level>0</level>
+          <default>10140003</default>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="mn.machine_id" type="string" label="20026" help="36115">
+          <level>0</level>
+          <default>1147</default>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="mn.url_feed" type="string" label="20026" help="36115">
+          <level>0</level>
+          <default>http://www.nationwidemember.com</default>
+          <control type="edit" format="string" />
+        </setting>
+        <setting id="mn.vertical" type="boolean" label="20026" help="36115">
+          <level>0</level>
+          <default>false</default>
+          <control type="toggle" />
+        </setting>       
+      </group>
+    </category>
     <category id="filelists" label="16000" help="36121">
       <group id="1" label="593">
         <setting id="filelists.showparentdiritems" type="boolean" label="13306" help="36122">
@@ -1668,7 +1692,7 @@
       <group id="1" label="13000">
         <setting id="services.devicename" type="string" label="1271" help="36321">
           <level>0</level>
-          <default>Kodi</default>
+          <default>MemberNetTV</default>
           <control type="edit" format="string" />
         </setting>
       </group>
@@ -1698,12 +1722,12 @@
       <requirement>HAS_WEB_SERVER</requirement>
         <setting id="services.webserver" type="boolean" label="263" help="36328">
           <level>1</level>
-          <default>false</default>
+          <default>true</default>
           <control type="toggle" />
         </setting>
         <setting id="services.webserverport" type="integer" parent="services.webserver" label="730" help="36329">
           <level>1</level>
-          <default>8080</default>
+          <default>8180</default>
           <constraints>
             <minimum>1</minimum>
             <step>1</step>
@@ -1716,7 +1740,7 @@
         </setting>
         <setting id="services.webserverusername" type="string" parent="services.webserver" label="1048" help="36330">
           <level>1</level>
-          <default>kodi</default>
+          <default>membernet</default>
           <constraints>
             <allowempty>true</allowempty>
           </constraints>
@@ -1730,7 +1754,7 @@
         </setting>
         <setting id="services.webserverpassword" type="string" parent="services.webserver" label="733" help="36331">
           <level>1</level>
-          <default></default>
+          <default>membernet</default>
           <constraints>
             <allowempty>true</allowempty>
           </constraints>
@@ -1752,7 +1776,7 @@
         </setting>
         <setting id="services.webskin" type="addon" label="199" help="36332">
           <level>1</level>
-          <default>webinterface.default</default>
+          <default>webinterface.nationwide_membernet</default>
           <constraints>
             <addontype>xbmc.webinterface</addontype>
           </constraints>
@@ -2715,7 +2739,7 @@
         <setting id="input.enablemouse" type="boolean" label="21369" help="36377">
           <level>0</level>
           <control type="toggle" />
-          <default>true</default>
+          <default>false</default>
         </setting>
         <setting id="input.asknewcontrollers" type="boolean">
           <level>0</level>
@@ -3158,7 +3182,7 @@
       <group id="1" label="24997">
         <setting id="lookandfeel.skin" type="addon" label="166" help="36103">
           <level>0</level>
-          <default>skin.estuary</default>
+          <default>skin.nationwide</default>
           <constraints>
             <addontype>xbmc.gui.skin</addontype>
           </constraints>

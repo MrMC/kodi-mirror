@@ -849,6 +849,11 @@ bool CFileItem::IsPVRChannel() const
   return HasPVRChannelInfoTag();
 }
 
+bool CFileItem::IsMembernet() const
+{
+  return GetProperty("Membernet").asBoolean();
+}
+
 bool CFileItem::IsPVRRecording() const
 {
   return HasPVRRecordingInfoTag();

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html xml:lang="en" lang="en">
+	<head>
+		<title>MemberNetTV</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="copyright" content="pimaxplus.com" />
+		<meta name="description" content="" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+		<link rel="apple-touch-icon" href="images/pimaxplus-touch.png" />
+		<link rel="apple-touch-icon-precomposed" href="images/pimaxplus-touch.png" />
+
+        <!-- Bootstrap CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+
+		<link href="css/style.css" rel="stylesheet" media="screen">
+	</head>
+	<body>
+        <div id="header">
+            <div class="navbar navbar-inverse navbar-fixed-top">
+              <div class="navbar-inner">
+                <div class="container-fluid">
+                  <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </a>
+                  <a class="brand" href="#"><img src="img/nw-logo.png" /></a>
+                  <div class="nav-collapse collapse">
+                    <div class="clearfix"></div>
+                    <ul class="nav">
+                      <ul class="nav">
+                            <li><a href="index.html">Home</a></li>
+                            <li class="active"><a href="machinesettings.html">Machine Settings</a></li>
+                        </ul>
+                    </ul>
+                  </div><!--/.nav-collapse -->
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <form action="#" class="form-horizontal" data-type="nationwide-machinesettings">
+                <div class="row-fluid">
+                    <div class="span4 col1">
+                        <fieldset>
+                            <legend>Assignment/Location</legend>
+                            <div class="control-group">
+                                <label class="control-label" for="inputUrl">URL</label>
+                                <div class="controls">
+                                    <input type="text" id="inputUrl" placeholder="URL" name="url[feed]">
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="inputLocationID">Location ID</label>
+                                <div class="controls">
+                                    <input type="text" onkeyup="this.value=this.value.replace(/[^\d]/,'')" id="inputLocationID" placeholder="Location ID" name="location[id]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputMachineID">Machine ID</label>
+                                <div class="controls">
+                                    <input type="text" onkeyup="this.value=this.value.replace(/[^\d]/,'')" id="inputMachineID" placeholder="Machine ID" name="machine[id]">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <input type="submit" value="Save Changes" class="btn btn-primary" />
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="selectGroup">Group</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectGroup" name="assignment[group]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="selectMember">Member</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectMember" name="assignment[member]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="selectRetailLocation">Retail Location</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectRetailLocation" name="assignment[retail_location]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="selectPlaylist">Playlist</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectPlaylist" name="assignment[playlist]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Updates</legend>
+                            <div class="control-group">
+                                <div class="controls">
+                                    <label class="control-label" for="allowUpdatesCheckbox"><input type="checkbox" disabled="disabled" id="allowUpdatesCheckbox" name="settings[update]" value="1"> Allow software to be updated</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="selectMemberNetTVSoftwareVersion">MemberNet TV Software Version</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectMemberNetTVSoftwareVersion" name="settings[software_version]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputCFBundleVersion">CFBundle Version</label>
+                                <div class="controls">
+                                    <input readonly type="text" id="inputCFBundleVersion" placeholder="CFBundleVersion" name="settings[cf_bundle_version]">
+                                </div>
+                            </div>
+<!--
+                            <div class="control-group">
+                                <label class="control-label" for="inputCommandLine">Command Line</label>
+                                <div class="controls">
+                                    <textarea id="inputCommandLine" rows="5" name="machine[commandline]"></textarea>
+                                </div>
+                            </div>
+--->
+                        </fieldset>
+                </div>
+                <div class="span4 col2">
+                        <fieldset>
+                            <legend>Settings and Info</legend>
+                            <div class="control-group">
+                                <label class="control-label" for="inputMachineName">Machine Name</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputMachineName" placeholder="Machine Name" name="machine[name]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputMachineDescription">Machine Description</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputMachineDescription" placeholder="Machine Description" name="machine[description]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputSerialNumber">Serial Number</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputSerialNumber" placeholder="Serial Number" name="machine[sn]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputWarrantyNumber">Warranty Number</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputWarrantyNumber" placeholder="Warranty Number" name="machine[warrenty_nr]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputEthernetID">Ethernet ID</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputEthernetID" placeholder="Ethernet ID" name="machine[ethernet_id]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputWirelessID">Wireless ID</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputWirelessID" placeholder="Wireless ID" name="machine[wireless_id]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputPurchaseDate">Purchase Date</label>
+                                <div class="controls">
+                                    <input readonly class="span5" type="text" id="inputPurchaseDate" placeholder="09/03/1980" name="machine[purchase_date]"><i class="icon-calendar"></i>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputVendor">Vendor</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputVendor" placeholder="Vendor" name="machine[vendor]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputHardwareVersion">Hardware Version</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputHardwareVersion" placeholder="Hardware Version" name="machine[hw_version]">
+                                </div>
+                            </div>
+
+                             <div class="control-group">
+                                <label class="control-label" for="selectLocalTimezone">Local Timezone</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectLocalTimezone" name="machine[timezone]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                             <div class="control-group">
+                                <label class="control-label" for="selectStatus">Status</label>
+                                <div class="controls">
+                                    <select disabled="disabled" id="selectStatus" name="machine[status]">
+                                        <option value="1">Item 1</option>
+                                        <option value="2">Item 2</option>
+                                        <option value="3">Item 3</option>
+                                        <option value="4">Item 4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <div class="controls">
+                                    <input disabled="disabled" type="checkbox" id="allowAutomaticDownloadsCheckbox" name="settings[automatic_download_of_video_content]" value="1"> <label class="control-label" for="allowAutomaticDownloadsCheckbox">Allow automatic downloads of new video content</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputUpdateInterval">Update Interval</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputUpdateInterval" placeholder="Update Interval" name="settings[update_interval]">
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="inputUpdatetime">Update Time</label>
+                                <div class="controls">
+                                    <input readonly class="span12" type="text" id="inputUpdatetime" placeholder="Update Time" name="settings[update_time]">
+                                </div>
+                            </div>
+                        </fieldset>
+                </div>
+                <div class="span4 col3">
+                        <fieldset>
+                            <legend>Network Settings</legend>
+                            <div class="control-group">
+                                <label class="control-label" for="enableDHCPOption">DHCP</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[network][dhcp]" value="1"> True</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[network][dhcp]" value="0"> False</label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Menu Settings</legend>
+                            <div class="control-group">
+                                <label class="control-label" for="optionsMemberNet">MemberNet</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[memberNet]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[memberNet]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsVendorCommcercials">Vendor Commcercials</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[vendorCommercials]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[vendorCommercials]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsHDContent">HD Content</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[HdContent]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[HdContent]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsMemberCommcercials">Member Commcercials</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[memberCommercials]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[memberCommercials]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsMovieTrailers">Movie Trailers</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[movieTrailers]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[movieTrailers]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsPromoCampaigns">Promotional Campaigns</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[promoCampaigns]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[promoCampaigns]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsNationwideBroadcasts">Nationwide Broadcasts</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[nationwideBroadcast]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[nationwideBroadcast]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsImagiNationwideHD">ImagiNationwide HD</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[imagiNationwideHD]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[imagiNationwideHD]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="control-label" for="optionsPrimeMediaCommcercialFactory">PrimeMedia Commcercial Factory</label>
+                                <div class="controls">
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[primeMediaCommercial]" value="1"> Show</label>
+                                    <label class="radio inline"><input disabled="disabled" type="radio" name="settings[primeMediaCommercial]" value="0"> Hide</label>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </div>
+                </div>
+            </form> <!-- /row -->
+        </div> <!-- /content -->
+
+        <!-- JS files -->
+        <script type="text/javascript" src="scripts/jquery-1.9.0.min.js"></script>
+        <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/nationwide.app.js"></script>
+	</body>
+</html>

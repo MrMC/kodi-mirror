@@ -2834,7 +2834,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   {
     // the following code block is only applicable when bRestart is false OR to ISO stacks
 
-    if (item.IsVideo())
+    if (!item.IsMembernet() && item.IsVideo())
     {
       // open the d/b and retrieve the bookmarks for the current movie
       CVideoDatabase dbs;

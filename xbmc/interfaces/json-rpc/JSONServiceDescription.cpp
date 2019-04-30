@@ -28,6 +28,7 @@
 #include "FavouritesOperations.h"
 #include "TextureOperations.h"
 #include "SettingsOperations.h"
+#include "nwmn/MNJSONOperations.h"
 
 using namespace JSONRPC;
 
@@ -234,7 +235,10 @@ JsonRpcMethodMap CJSONServiceDescription::m_methodMaps[] = {
 
 // XBMC operations
   { "XBMC.GetInfoLabels",                           CXBMCOperations::GetInfoLabels },
-  { "XBMC.GetInfoBooleans",                         CXBMCOperations::GetInfoBooleans }
+  { "XBMC.GetInfoBooleans",                         CXBMCOperations::GetInfoBooleans },
+
+  { "MN.SaveSettings",                              CMNJSONOperations::SetPlayerSettings },
+  { "MN.DumpLogcat",                                CMNJSONOperations::DumpLogcat }
 };
 
 JSONSchemaTypeDefinition::JSONSchemaTypeDefinition()

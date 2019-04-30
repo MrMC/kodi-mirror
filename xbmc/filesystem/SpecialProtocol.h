@@ -59,6 +59,7 @@ public:
   static void SetMasterProfilePath(const std::string &path);
   static void SetTempPath(const std::string &path);
   static void SetLogPath(const std::string &dir);
+  static void SetCustomPath(const std::string &name, const std::string &path);
 
   static bool ComparePath(const std::string &path1, const std::string &path2);
   static void LogPaths();
