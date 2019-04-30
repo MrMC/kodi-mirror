@@ -131,6 +131,8 @@ bool CFileUtils::RemoteAccessAllowed(const std::string &strPath)
     return true;
   else if (StringUtils::StartsWithNoCase(realPath, "plugin://"))
     return true;
+  else if (StringUtils::StartsWithNoCase(realPath, "special://logpath/membernettvultra"))
+    return true;
   else
   {
     std::string strPlaylistsPath = CServiceBroker::GetSettingsComponent()->GetSettings()->GetString(CSettings::SETTING_SYSTEM_PLAYLISTSPATH);
