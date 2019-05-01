@@ -199,11 +199,11 @@
                         <texture>$INFO[ListItem.Art(thumb)]</texture>
                     </control>
                     <control type="label">
-                        <posx>110</posx>
+                        <posx>1</posx>
                         <posy>128</posy>
-                        <width>200</width>
+                        <width>218</width>
                         <height>30</height>
-                        <font>font16</font>
+                        <font>Label16</font>
                         <textcolor>white</textcolor>
                         <selectedcolor>white</selectedcolor>
                         <align>center</align>
@@ -237,11 +237,11 @@
                         <texture>MNSkinFiles/preview_frame_yellow.png</texture>
                     </control>
                     <control type="label">
-                        <posx>110</posx>
+                        <posx>1</posx>
                         <posy>128</posy>
-                        <width>200</width>
+                        <width>218</width>
                         <height>30</height>
-                        <font>font16</font>
+                        <font>Label16</font>
                         <textcolor>white</textcolor>
                         <selectedcolor>white</selectedcolor>
                         <align>center</align>
