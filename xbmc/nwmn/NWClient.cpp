@@ -1321,18 +1321,20 @@ bool CNWClient::IsAuthorized()
 
 bool CNWClient::AllowExit()
 {
+  // we dont allow exit in MN v3
+  return false;
   // only block exit if we are authorized
   // and not using NWMNDEMO/NWMNDEMO4K codes
-  if (IsAuthorized())
-  {
-    // NWMNDEMO4K is allowed to escape
-    if (m_PlayerInfo.apiKey.find("wAE/V6Gq3X3h0ZOjcK/A") != std::string::npos)
-      return true;
-    // NWMNDEMO is allowed to escape
-    if (m_PlayerInfo.apiKey.find("LbpCC91TBDsoHExRxvtV") != std::string::npos)
-      return true;
-
-    return false;
-  }
-  return true;
+//  if (IsAuthorized())
+//  {
+//    // NWMNDEMO4K is allowed to escape
+//    if (m_PlayerInfo.apiKey.find("wAE/V6Gq3X3h0ZOjcK/A") != std::string::npos)
+//      return true;
+//    // NWMNDEMO is allowed to escape
+//    if (m_PlayerInfo.apiKey.find("LbpCC91TBDsoHExRxvtV") != std::string::npos)
+//      return true;
+//
+//    return false;
+//  }
+//  return true;
 }
