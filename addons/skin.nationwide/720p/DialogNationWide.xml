@@ -92,6 +92,7 @@
 					<onup>9016</onup>
 					<ondown>90150</ondown>
 					<include>MNButton</include>
+					<onclick>RunAddon(service.libreelec.settings)</onclick>
 				</control>
 				<control type="group">
 					<visible>!Control.isVisible(90145) + !Control.isVisible(90200) +  !Window.IsVisible(progressdialog) + [Control.HasFocus(9016) | Control.HasFocus(90103) | Control.HasFocus(90105) | Control.HasFocus(90126) | Control.HasFocus(90134) | Control.HasFocus(90144) | Control.HasFocus(90150)]</visible>
