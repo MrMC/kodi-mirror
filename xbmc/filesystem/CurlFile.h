@@ -52,6 +52,7 @@ namespace XFILE
       int IoControl(EIoControl request, void* param) override;
       double GetDownloadSpeed() override;
 
+      using XFILE::IFile::Delete;
       bool Delete(const std::string& strURL, const std::string& strData, std::string& strHTML);
       bool Put(const std::string& strURL, const std::string& strData, std::string& strHTML);
       bool Post(const std::string& strURL, const std::string& strPostData, std::string& strHTML);
