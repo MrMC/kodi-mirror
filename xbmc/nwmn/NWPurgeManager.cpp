@@ -21,7 +21,7 @@
 
 #include "system.h"
 
-#if defined(TARGET_ANDROID)
+#if defined(TARGET_ANDROID) || defined(TARGET_LINUX)
 #include <sys/statfs.h>
 #else
 #include <sys/param.h>
