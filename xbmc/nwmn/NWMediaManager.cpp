@@ -92,7 +92,7 @@ bool CNWMediaManager::GetLocalAsset(size_t index, struct NWAsset &asset)
   return rtn;
 }
 
-bool CNWMediaManager::GetLocalAsset(int asset_id, NWAsset &asset)
+bool CNWMediaManager::GetLocalAsset(std::string asset_id, NWAsset &asset)
 {
   bool rtn = false;
   for (size_t index = 0; index < m_assets.size(); index++)
@@ -184,8 +184,9 @@ void CNWMediaManager::Process()
   CLog::Log(LOGDEBUG, "**NW** - CNWMediaManager::Process Started");
   #endif
 
-  //m_http.SetBufferSize(32768 * 10);
-  m_http.SetTimeout(5);
+  m_http.SetBufferSize(32768 * 10);
+//  m_http.SetTimeout(5);
+  m_http.SetRequestHeader("seekable", "1");
 
   while (!m_bStop)
   {
@@ -221,18 +222,18 @@ void CNWMediaManager::Process()
       if (m_AssetUpdateCallBackFn)
         (*m_AssetUpdateCallBackFn)(m_AssetUpdateCallBackCtx, asset, AssetDownloadState::willDownload);
 
-      unsigned int size = asset.video_size;
-      if (size && m_http.Download(asset.video_url, asset.video_localpath, &size))
+      unsigned int size = NULL;
+      if (m_http.Download(asset.video_url, asset.video_localpath, &size))
       {
         // verify download by md5 check
         //if (StringUtils::EqualsNoCase(asset.video_md5, CUtil::GetFileMD5(asset.video_localpath)))
         struct __stat64 st;
-        if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1 && st.st_size == asset.video_size)
-        {
+//        if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1 && st.st_size == asset.video_size)
+//        {
           // quick grab of thumbnail with no error checking.
           if (!XFILE::CFile::Exists(asset.thumb_localpath))
           {
-            size = asset.thumb_size;
+            size = NULL;
             m_http.Download(asset.thumb_url, asset.thumb_localpath, &size);
           }
 
@@ -248,22 +249,22 @@ void CNWMediaManager::Process()
             if (!m_download.empty())
               m_download.erase(m_download.begin());
           }
-        }
-        else
-        {
-          CLog::Log(LOGERROR, "**NW** - CNWMediaManager::Process "
-                    "md5 mismatch for %s", asset.video_localpath.c_str());
-          // must be bad file, delete and requeue for download
-          if (XFILE::CFile::Delete(asset.video_localpath))
-          {
-            // remove any thumbnail for this asset
-            XFILE::CFile::Delete(asset.thumb_localpath);
-            download_lock.Enter();
-            m_download.push_back(asset);
-            // erase front after we re-queue
-            m_download.erase(m_download.begin());
-          }
-       }
+//        }
+//        else
+//        {
+//          CLog::Log(LOGERROR, "**NW** - CNWMediaManager::Process "
+//                    "md5 mismatch for %s", asset.video_localpath.c_str());
+//          // must be bad file, delete and requeue for download
+//          if (XFILE::CFile::Delete(asset.video_localpath))
+//          {
+//            // remove any thumbnail for this asset
+//            XFILE::CFile::Delete(asset.thumb_localpath);
+//            download_lock.Enter();
+//            m_download.push_back(asset);
+//            // erase front after we re-queue
+//            m_download.erase(m_download.begin());
+//          }
+//       }
       }
       else
       {

@@ -421,16 +421,23 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
   XFILE::CCurlFile curlfile;
   curlfile.SetTimeout(10);
 
-  CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id + "/files");
+  std::string urlBase = "https://content-screening-api.dev.envoi.cloud/getallassets";
+  std::string token = "55de81c277222d21621cb75aa1b14eccea19d7e285fb8c3421fb0325cbd82b36cd0fc391c1dfcf1e82d9743a8139b0f38c2285946002d518d68fa4b32d57d167fa1a368aa7ba8ce3efb7e7d1f7a65006c9f9c4a6e5b8958782dfd5e22fdd916aa54199efe13c7da0894dd83291eeab43ec00bb1728008a791d1b5bce08d416d365";
+  CURL curl(urlBase);
   curl.SetProtocolOption("seekable", "0");
-  curl.SetProtocolOption("auth", "basic");
+//  curl.SetProtocolOption("auth", "basic");
   curl.SetProtocolOption("Cache-Control", "no-cache");
   curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetUserName(playlistItems.apiKey);
-  curl.SetPassword(playlistItems.apiSecret);
+  curl.SetOption("appname", "VLIVEAMERICA");
+  curl.SetOption("assetcount", "12");
+  curl.SetOption("pageNumber", "1");
+  curl.SetOption("carousel", "Music Videos");
+  curl.SetOption("token", token);
+//  curl.SetUserName(playlistItems.apiKey);
+//  curl.SetPassword(playlistItems.apiSecret);
   std::string strResponse;
-
-  if (curlfile.Get(curl.Get(), strResponse))
+  std::string testURL = curl.Get();
+  if (curlfile.Post(curl.Get(), "",strResponse))
   {
     #if ENABLE_TVAPI_DEBUGLOGS
     CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
@@ -445,94 +452,108 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
     playlistItems.type = playlist["type"].asString();
 
     CVariant results(CVariant::VariantTypeArray);
-    results = reply["results"];
+    results = reply["result"]["Items"];
     for (size_t i = 0; i < results.size(); ++i)
     {
       CVariant result = results[i];
 
       TVAPI_PlaylistItem item;
-      item.id = result["id"].asString();
-      item.name = result["name"].asString();
-      item.tv_category_id = result["tv_category_id"].asString();
-      item.description = result["description"].asString();
-      item.created_date = result["created_date"].asString();
-      item.updated_date = result["updated_date"].asString();
-      item.completion_date = result["completion_date"].asString();
-      item.theatricalrelease = result["theatricalrelease"].asString();
-      item.dvdrelease = result["dvdrelease"].asString();
-      item.download = result["download"].asString();
-      CVariant availability = result["availability"];
-      item.availability_to = availability["to"].asString();
-      item.availability_from = availability["from"].asString();
+      item.id = result["_id"].asString();
+      item.name = result["assetname"].asString();
+//      item.tv_category_id = result["tv_category_id"].asString();
+//      item.description = result["description"].asString();
+//      item.created_date = result["created_date"].asString();
+//      item.updated_date = result["updated_date"].asString();
+//      item.completion_date = result["completion_date"].asString();
+//      item.theatricalrelease = result["theatricalrelease"].asString();
+//      item.dvdrelease = result["dvdrelease"].asString();
+//      item.download = result["download"].asString();
+//      CVariant availability = result["availability"];
+//      item.availability_to = availability["to"].asString();
+//      item.availability_from = availability["from"].asString();
 
-      CVariant files = result["files"];
-      if (files.isObject())
-      {
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-        {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject())
-          {
-            if (it->first == "720" || it->first == "1080" || it->first == "4K")
-            {
-              TVAPI_PlaylistFile file;
-              file.type = it->first;
-              file.path = fileobj["path"].asString();
-              file.size = fileobj["size"].asString();
-              file.width = fileobj["width"].asString();
-              file.height = fileobj["height"].asString();
-              file.etag = fileobj["etag"].asString();
-              file.mime_type = fileobj["mime_type"].asString();
-              file.created_date = fileobj["created_date"].asString();
-              file.updated_date = fileobj["updated_date"].asString();
-              item.files.push_back(file);
-            }
-          }
-        }
-        // sort from low rez to high rez
-        std::sort(item.files.begin(), item.files.end(),
-          [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
-          {
-            return std_stoi(a.type) < std_stoi(b.type);
-          });
+      item.thumb.path = result["landscape_logo_image"].asString();
+      item.poster.path = result["portrait_logo_image"].asString();
 
-        // now find the 'thumb'
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-        {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject() && it->first == "thumb")
-          {
-            item.thumb.type = it->first;
-            item.thumb.path = fileobj["path"].asString();
-            item.thumb.size = fileobj["size"].asString();
-            item.thumb.width = fileobj["width"].asString();
-            item.thumb.height = fileobj["height"].asString();
-            item.thumb.etag = fileobj["etag"].asString();
-            item.thumb.mime_type = fileobj["mime_type"].asString();
-            item.thumb.created_date = fileobj["created_date"].asString();
-            item.thumb.updated_date = fileobj["updated_date"].asString();
-          }
-        }
+      CVariant videoItem = result["Video"][0];
+      TVAPI_PlaylistFile file;
+//      file.type = it->first;
+      file.path = videoItem["Url"].asString();
+      file.size = videoItem["size"].asString();
+//      file.width = fileobj["width"].asString();
+//      file.height = fileobj["height"].asString();
+//      file.etag = fileobj["etag"].asString();
+//      file.mime_type = fileobj["mime_type"].asString();
+//      file.created_date = fileobj["created_date"].asString();
+//      file.updated_date = fileobj["updated_date"].asString();
+      item.files.push_back(file);
+//      if (files.isObject())
+//      {
+//        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+//        {
+//          CVariant fileobj = it->second;
+//          if (fileobj.isObject())
+//          {
+//            if (it->first == "720" || it->first == "1080" || it->first == "4K")
+//            {
+//              TVAPI_PlaylistFile file;
+//              file.type = it->first;
+//              file.path = fileobj["path"].asString();
+//              file.size = fileobj["size"].asString();
+//              file.width = fileobj["width"].asString();
+//              file.height = fileobj["height"].asString();
+//              file.etag = fileobj["etag"].asString();
+//              file.mime_type = fileobj["mime_type"].asString();
+//              file.created_date = fileobj["created_date"].asString();
+//              file.updated_date = fileobj["updated_date"].asString();
+//              item.files.push_back(file);
+//            }
+//          }
+//        }
+//        // sort from low rez to high rez
+//        std::sort(item.files.begin(), item.files.end(),
+//          [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
+//          {
+//            return std_stoi(a.type) < std_stoi(b.type);
+//          });
+//
+//        // now find the 'thumb'
+//        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+//        {
+//          CVariant fileobj = it->second;
+//          if (fileobj.isObject() && it->first == "thumb")
+//          {
+//            item.thumb.type = it->first;
+//            item.thumb.path = fileobj["path"].asString();
+//            item.thumb.size = fileobj["size"].asString();
+//            item.thumb.width = fileobj["width"].asString();
+//            item.thumb.height = fileobj["height"].asString();
+//            item.thumb.etag = fileobj["etag"].asString();
+//            item.thumb.mime_type = fileobj["mime_type"].asString();
+//            item.thumb.created_date = fileobj["created_date"].asString();
+//            item.thumb.updated_date = fileobj["updated_date"].asString();
+//          }
+//        }
+//
+//        // and find the 'poster'
+//        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+//        {
+//          CVariant fileobj = it->second;
+//          if (fileobj.isObject() && it->first == "thumb")
+//          {
+//            item.poster.type = it->first;
+//            item.poster.path = fileobj["path"].asString();
+//            item.poster.size = fileobj["size"].asString();
+//            item.poster.width = fileobj["width"].asString();
+//            item.poster.height = fileobj["height"].asString();
+//            item.poster.etag = fileobj["etag"].asString();
+//            item.poster.mime_type = fileobj["mime_type"].asString();
+//            item.poster.created_date = fileobj["created_date"].asString();
+//            item.poster.updated_date = fileobj["updated_date"].asString();
+//          }
+//        }
 
-        // and find the 'poster'
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-        {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject() && it->first == "thumb")
-          {
-            item.poster.type = it->first;
-            item.poster.path = fileobj["path"].asString();
-            item.poster.size = fileobj["size"].asString();
-            item.poster.width = fileobj["width"].asString();
-            item.poster.height = fileobj["height"].asString();
-            item.poster.etag = fileobj["etag"].asString();
-            item.poster.mime_type = fileobj["mime_type"].asString();
-            item.poster.created_date = fileobj["created_date"].asString();
-            item.poster.updated_date = fileobj["updated_date"].asString();
-          }
-        }
-
-      }
+//      }
       playlistItems.items.push_back(item);
     }
 
