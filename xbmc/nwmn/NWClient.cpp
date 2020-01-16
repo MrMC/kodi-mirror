@@ -385,8 +385,8 @@ void CNWClient::Process()
       CLog::Log(LOGDEBUG, "**NW** - (process) new m_NextUpdateTime = %s", m_NextUpdateTime.GetAsDBDateTime().c_str());
 
       UpdateNetworkStatus();
-      if (m_HasNetwork)
-        AddJob(new CNWClientJob(this, "GetActions"));
+      //if (m_HasNetwork)
+      //  AddJob(new CNWClientJob(this, "GetActions"));
 
       GetPlayerInfo();
       if (GetProgamInfo())
