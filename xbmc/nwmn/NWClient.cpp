@@ -1193,6 +1193,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
           asset.id = item.id;
           asset.type = file.type;
           asset.video_url = file.path;
+          StringUtils::Replace(asset.video_url, " ", "%20");
           asset.video_md5 = file.etag;
           asset.video_size = std_stoi(file.size);
           // format is "2013-02-27 01:00:00"
@@ -1210,6 +1211,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
       {
           // bring over thumb references
           asset.thumb_url = item.thumb.path;
+          StringUtils::Replace(asset.thumb_url, " ", "%20");
           asset.thumb_md5 = item.thumb.etag;
           asset.thumb_size = std_stoi(item.thumb.size);
           asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
