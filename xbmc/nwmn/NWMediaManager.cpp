@@ -222,14 +222,14 @@ void CNWMediaManager::Process()
       if (m_AssetUpdateCallBackFn)
         (*m_AssetUpdateCallBackFn)(m_AssetUpdateCallBackCtx, asset, AssetDownloadState::willDownload);
 
-      unsigned int size = NULL;
-      if (m_http.Download(asset.video_url, asset.video_localpath, &size))
+      unsigned int size = asset.video_size;
+      if (size && m_http.Download(asset.video_url, asset.video_localpath, &size))
       {
         // verify download by md5 check
         //if (StringUtils::EqualsNoCase(asset.video_md5, CUtil::GetFileMD5(asset.video_localpath)))
         struct __stat64 st;
-//        if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1 && st.st_size == asset.video_size)
-//        {
+        if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1 && st.st_size == asset.video_size)
+        {
           // quick grab of thumbnail with no error checking.
           if (!XFILE::CFile::Exists(asset.thumb_localpath))
           {
@@ -264,7 +264,7 @@ void CNWMediaManager::Process()
 //            // erase front after we re-queue
 //            m_download.erase(m_download.begin());
 //          }
-//       }
+        }
       }
       else
       {

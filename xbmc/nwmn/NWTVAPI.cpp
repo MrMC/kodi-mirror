@@ -479,6 +479,8 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
       TVAPI_PlaylistFile file;
 //      file.type = it->first;
       file.path = videoItem["Url"].asString();
+      // this might need to be changed, we assume it will be "size"
+      // but we never know what envoi will come up with
       file.size = videoItem["size"].asString();
 //      file.width = fileobj["width"].asString();
 //      file.height = fileobj["height"].asString();
