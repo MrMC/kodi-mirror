@@ -1185,11 +1185,6 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
 //      std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
       for (auto file : item.files)
       {
-//        if (file.type == video_format)
-//        {
-          // trap out bad urls
-          if (file.path.find("proxy.membernettv.com") != std::string::npos)
-            continue;
           asset.id = item.id;
           asset.type = file.type;
           asset.video_url = file.path;
@@ -1204,7 +1199,6 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
           std::string localpath = kNWClient_DownloadVideoPath + asset.id + video_extension;
           asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
           break;
-//        }
       }
       // if we got an complete asset, save it.
       if (!asset.video_url.empty())
