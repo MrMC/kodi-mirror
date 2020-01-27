@@ -249,21 +249,21 @@ void CNWMediaManager::Process()
             if (!m_download.empty())
               m_download.erase(m_download.begin());
           }
-//        }
-//        else
-//        {
-//          CLog::Log(LOGERROR, "**NW** - CNWMediaManager::Process "
-//                    "md5 mismatch for %s", asset.video_localpath.c_str());
-//          // must be bad file, delete and requeue for download
-//          if (XFILE::CFile::Delete(asset.video_localpath))
-//          {
-//            // remove any thumbnail for this asset
-//            XFILE::CFile::Delete(asset.thumb_localpath);
-//            download_lock.Enter();
-//            m_download.push_back(asset);
-//            // erase front after we re-queue
-//            m_download.erase(m_download.begin());
-//          }
+        }
+        else
+        {
+          CLog::Log(LOGERROR, "**NW** - CNWMediaManager::Process "
+                    "md5 mismatch for %s", asset.video_localpath.c_str());
+          // must be bad file, delete and requeue for download
+          if (XFILE::CFile::Delete(asset.video_localpath))
+          {
+            // remove any thumbnail for this asset
+            XFILE::CFile::Delete(asset.thumb_localpath);
+            download_lock.Enter();
+            m_download.push_back(asset);
+            // erase front after we re-queue
+            m_download.erase(m_download.begin());
+          }
         }
       }
       else
