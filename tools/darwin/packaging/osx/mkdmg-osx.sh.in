@@ -31,7 +31,9 @@ if [ "@APP_VERSION_TAG_LC@" != "" ]; then
   REVISION=$REVISION~@APP_VERSION_TAG_LC@
 fi
 
-ARCHIVE=${PACKAGE}_${VERSION}-${REVISION}_macosx-intel-${ARCHITECTURE}
+now="$(date +'%d_%m_%Y_%H%M%S')"
+
+ARCHIVE=${PACKAGE}_${VERSION}-${REVISION}-${now}
 
 echo Creating $PACKAGE package version $VERSION revision $REVISION
 rm -rf $DIRNAME/$ARCHIVE.dmg
