@@ -420,18 +420,18 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
 {
   XFILE::CCurlFile curlfile;
   curlfile.SetTimeout(10);
-
-  std::string urlBase = "https://content-screening-api.dev.envoi.cloud/getallassets";
-  std::string token = "55de81c277222d21621cb75aa1b14eccea19d7e285fb8c3421fb0325cbd82b36cd0fc391c1dfcf1e82d9743a8139b0f38c2285946002d518d68fa4b32d57d167fa1a368aa7ba8ce3efb7e7d1f7a65006c9f9c4a6e5b8958782dfd5e22fdd916aa54199efe13c7da0894dd83291eeab43ec00bb1728008a791d1b5bce08d416d365";
+  //https://content-screening-api.dev.envoi.cloud/assets?appname=membernettv&token=55de81c277222d21621cb75aa1b14eccea19d7e285fb8c3421fb0325cbd82b36cd0fc391c1dfcf1e82d9743aba1094c7ac11a6b4463fe025ecaeace74772da24eb1f2e98a5b88dfafebee5dbf2a8590fdc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2&assetcount=12&pageNumber=1
+  std::string urlBase = "https://content-screening-api.dev.envoi.cloud/assets";
+  std::string token = "55de81c277222d21621cb75aa1b14eccea19d7e285fb8c3421fb0325cbd82b36cd0fc391c1dfcf1e82d9743aba1094c7ac11a6b4463fe025ecaeace74772da24eb1f2e98a5b88dfafebee5dbf2a8590fdc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2";
   CURL curl(urlBase);
   curl.SetProtocolOption("seekable", "0");
 //  curl.SetProtocolOption("auth", "basic");
   curl.SetProtocolOption("Cache-Control", "no-cache");
   curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetOption("appname", "VLIVEAMERICA");
+  curl.SetOption("appname", "membernettv");
   curl.SetOption("assetcount", "12");
   curl.SetOption("pageNumber", "1");
-  curl.SetOption("carousel", "Music Videos");
+//  curl.SetOption("carousel", "Music Videos");
   curl.SetOption("token", token);
 //  curl.SetUserName(playlistItems.apiKey);
 //  curl.SetPassword(playlistItems.apiSecret);
