@@ -4,32 +4,32 @@
 	<!-- MN Fonts -->
 	 	<font>
 			<name>HomeScreen38</name>
-			<filename>BebasNeue.ttf</filename>
-			<size>38</size>
+			<filename>Oswald-Bold.ttf</filename>
+			<size>36</size>
 		</font>
 		<font>
 			<name>HomeScreen33</name>
-			<filename>BebasNeue.ttf</filename>
-			<size>33</size>
+			<filename>Oswald-Bold.ttf</filename>
+			<size>24</size>
 		</font>
 		<font>
 			<name>Button20</name>
-			<filename>arial.ttf</filename>
+			<filename>GOTHAMBOOK.TTF</filename>
 			<size>20</size>
 		</font>
 		<font>
 			<name>Button24</name>
-			<filename>arial.ttf</filename>
+			<filename>GOTHAMBOOK.TTF</filename>
 			<size>24</size>
 		</font>
 		<font>
 			<name>Label18</name>
-			<filename>arial.ttf</filename>
+			<filename>GOTHAMBOOK.TTF</filename>
 			<size>18</size>
 		</font>
 		<font>
 			<name>Label16</name>
-			<filename>arial.ttf</filename>
+			<filename>GOTHAMBOOK.TTF</filename>
 			<size>16</size>
 		</font>
 	<!-- Normal Fonts -->

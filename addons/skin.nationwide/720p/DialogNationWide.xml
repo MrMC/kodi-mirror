@@ -25,7 +25,7 @@
 			        <align>center</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
-			        <label>View specific Content for[CR]product demos.</label>
+			        <label>View specific content for[CR]product demos.</label>
 			        <font>HomeScreen33</font>
 			        <textcolor>white</textcolor>
 			        <shadowcolor>black</shadowcolor>
@@ -50,7 +50,7 @@
 			        <align>center</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
-			        <label>This will Play the playlist[CR]created on nationwides[CR]membernet website.</label>
+			        <label>This will play the playlist[CR]created on nationwides[CR]membernet website.</label>
 			        <font>HomeScreen33</font>
 			        <textcolor>white</textcolor>
 			        <shadowcolor>black</shadowcolor>
@@ -75,7 +75,7 @@
 			        <align>center</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
-			        <label>setup your internet[CR]connection, screen format,[CR]and more.</label>
+			        <label>Setup your internet[CR]connection, screen format,[CR]and more.</label>
 			        <font>HomeScreen33</font>
 			        <textcolor>white</textcolor>
 			        <shadowcolor>black</shadowcolor>
@@ -211,7 +211,7 @@
 				        <align>center</align>
 				        <aligny>center</aligny>
 				        <scroll>false</scroll>
-				        <label>This will Play the playlist[CR]created on nationwides[CR]membernet website.</label>
+				        <label>This will play the playlist[CR]created on nationwides[CR]membernet website.</label>
 				        <font>HomeScreen33</font>
 				        <textcolor>white</textcolor>
 				        <shadowcolor>black</shadowcolor>
@@ -236,7 +236,7 @@
 				        <align>center</align>
 				        <aligny>center</aligny>
 				        <scroll>false</scroll>
-				        <label>setup your internet[CR]connection, screen format,[CR]and more.</label>
+				        <label>Setup your internet[CR]connection, screen format,[CR]and more.</label>
 				        <font>HomeScreen33</font>
 				        <textcolor>white</textcolor>
 				        <shadowcolor>black</shadowcolor>
