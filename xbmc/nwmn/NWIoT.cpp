@@ -91,17 +91,18 @@
 
 static std::string strEndPoint = "a1l40foo64a71s-ats.iot.us-east-2.amazonaws.com";
 
+std::string strCAPath;
 std::string strCertPath;
 std::string strPrivatePath;
 std::string strProvisionedKeyPath;
 std::string strProvisionedCrtPath;
 
-static std::string strCAPath;// = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "root-CA.crt");
-
 using namespace Aws::Crt;
 using namespace Aws::Iotidentity;
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono;      // nanoseconds, system_clock, seconds
+
+CCriticalSection CNWIoT::m_payloadLock;
 
 CNWIoT::CNWIoT()
 : CThread("CNWIoT")
@@ -139,13 +140,12 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
       URIUtils::RemoveExtension(assetID);
       std::string format = currentFile.GetProperty("video_format").asString();
       CDateTime time = CDateTime::GetCurrentDateTime();
-      m_payload = StringUtils::Format("%s,%s,%s",
+      std::string payload = StringUtils::Format("%s,%s,%s",
         time.GetAsDBDateTime().c_str(),
         assetID.c_str(),
         format.c_str()
       );
-
-//      LogFilesPlayed(assetID,format);
+      CNWIoT::setPayload(payload);
     }
     else if (strcmp(message, "OnStop") == 0)
     {
@@ -170,7 +170,7 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
         }
         if (data["msg"] == "about")
         {
-          m_payload = data["payload"].asString();
+          CNWIoT::setPayload(data["payload"].asString());
         }
       }
     }
@@ -179,8 +179,14 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
 
 void CNWIoT::MsgReceived(CVariant msgPayload)
 {
-  CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, "AWS IoT", msgPayload["message"].asString(), 3000, false);
-  CLog::Log(LOGNOTICE, "**MN** - CNWIoT::MsgReceived - %s", msgPayload["message"].asString());
+  if (msgPayload.isMember("message"))
+  {
+    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, "AWS IoT", msgPayload["message"].asString(), 3000, false);
+    CLog::Log(LOGNOTICE, "**MN** - CNWIoT::MsgReceived - %s", msgPayload["message"].asString());
+  }
+  else
+    CLog::Log(LOGNOTICE, "**MN** - CNWIoT::MsgReceived - Did not have 'message' json object");
+
 }
 
 bool CNWIoT::DoAuthorize()
@@ -704,7 +710,9 @@ void CNWIoT::Process()
       ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)m_payload.c_str(), m_payload.length());
       ByteBuf *payloadPtr = &payload;
 
-      CNWIoT::setPayload();
+      // set payload to "" so we dont go in here until
+      // new msg has been set by announcer
+      CNWIoT::setPayload("");
       auto onPublishComplete = [payloadPtr](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
       {
           aws_byte_buf_clean_up(payloadPtr);
@@ -737,5 +745,6 @@ void CNWIoT::Process()
 
 void CNWIoT::setPayload(std::string payload)
 {
+  CSingleLock lock(m_payloadLock);
   m_payload = payload;
 }

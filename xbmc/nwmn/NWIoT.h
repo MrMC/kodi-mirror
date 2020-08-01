@@ -50,6 +50,7 @@ public:
 
 protected:
   virtual void  Process();
+  static CCriticalSection m_payloadLock;
   std::string   m_payload;
 
 };
