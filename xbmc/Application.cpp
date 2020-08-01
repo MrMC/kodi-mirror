@@ -86,6 +86,7 @@
 #include "utils/log.h"
 #include "SeekHandler.h"
 #include "ServiceBroker.h"
+#include "nwmn/NWIoT.h"
 
 #include "input/KeyboardLayoutManager.h"
 
@@ -884,6 +885,10 @@ bool CApplication::Initialize()
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UI_READY);
     CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
+
+  // init IoT listener
+  CNWIoT *iot = new CNWIoT;
+  iot->Listen();
 
   return true;
 }

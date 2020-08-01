@@ -189,6 +189,10 @@ CNWClient::CNWClient()
   if (!XFILE::CFile::Exists(webui_path))
     CUtil::CreateDirectoryEx(webui_path);
 
+  std::string strCertPath = m_strHome + kNWClient_CertPath;
+  if (!XFILE::CFile::Exists(strCertPath))
+    CUtil::CreateDirectoryEx(strCertPath);
+
   m_HasNetwork = HasInternet();
 
   TVAPI_SetURLBASE(kTVAPI_URLBASE);

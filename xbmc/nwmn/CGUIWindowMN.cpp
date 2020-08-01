@@ -41,6 +41,7 @@
 #include "utils/log.h"
 #include "settings/SettingsComponent.h"
 #include "guilib/GUIComponent.h"
+#include "interfaces/AnnouncementManager.h"
 
 
 
@@ -125,6 +126,13 @@ bool CGUIWindowMN::OnMessage(CGUIMessage& message)
                                                    GetDiskFree("/").c_str(),GetDiskTotal("/").c_str()));
       SET_CONTROL_LABEL(90219, StringUtils::Format("System Uptime: %s",
                                                    GetSystemUpTime().c_str()));
+      CVariant data;
+      data["msg"] = "about";
+      std::string payload;
+      payload = playerInfo.macaddress + "\n";
+      payload += playerInfo.serial_number + "\n";
+      data["payload"] = payload;
+      CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNmsg", data);
       return true;
     }
     else if (iControl == PLAYLIST && m_client)
@@ -185,12 +193,14 @@ bool CGUIWindowMN::OnMessage(CGUIMessage& message)
       }
       return true;
     }
-    else if (iControl == AUTHORIZE && m_client)
+    else if (iControl == AUTHORIZE)
     {
       CGUIMessage msg(GUI_MSG_ITEM_SELECTED, GetID(), AUTHORIZE);
       OnMessage(msg);
       
-      m_client->DoAuthorize();
+      CVariant data;
+      data["msg"] = "authorise";
+      CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNmsg", data);
       return true;
     }
   }
