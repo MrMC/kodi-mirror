@@ -555,7 +555,7 @@ bool CNWClient::GetProgamInfo()
   TVAPI_PlaylistItems playlistItems;
   playlistItems.apiKey = m_PlayerInfo.apiKey;
   playlistItems.apiSecret = m_PlayerInfo.apiSecret;
-  TVAPI_GetPlaylistItems(playlistItems, m_PlayerInfo.playlist_id);
+  TVAPI_GetPlaylistItems(playlistItems, m_PlayerInfo);
 
   m_ProgramInfo.video_format = m_PlayerInfo.video_format;
   CreatePlaylist(m_strHome, m_ProgramInfo, playlist, playlistItems);
