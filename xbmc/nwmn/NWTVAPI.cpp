@@ -485,6 +485,15 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, NWPlayerInfo pla
       TVAPI_PlaylistFile file;
   //      file.type = it->first;
       file.path = playlistUrls[i]["Mp4_proxy_URL"].asString();
+      CURL curlFile(file.path);
+      std::string strResponse;
+      struct __stat64 statBuffer;
+      XFILE::CCurlFile curlfile;
+      if (curlfile.Stat(curlFile, &statBuffer) == 0)
+      {
+        long size = statBuffer.st_size;
+        file.size = StringUtils::Format("%d",size);
+      }
     // this might need to be changed, we assume it will be "size"
     // but we never know what envoi will come up with
   //        file.size = videoItem["fileSize"].asString();
