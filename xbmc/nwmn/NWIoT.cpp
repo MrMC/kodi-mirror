@@ -55,6 +55,7 @@
 #include "settings/SettingsComponent.h"
 #include "platform/linux/XTimeUtils.h"
 #include "utils/JSONVariantParser.h"
+#include "utils/JSONVariantWriter.h"
 #include "dialogs/GUIDialogKaiToast.h"
 
 
@@ -145,7 +146,15 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
         assetID.c_str(),
         format.c_str()
       );
-      CNWIoT::setPayload(payload);
+      // { machineId: ‘’, eventType: ‘’, details: { } }
+      CVariant payloadObject;
+      std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+      payloadObject["machineId"] = uuid;
+      payloadObject["eventType"] = "playbackStart";
+      payloadObject["details"] = payload;
+      std::string payloadStr;
+      CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+      CNWIoT::setPayload(payloadStr);
     }
     else if (strcmp(message, "OnStop") == 0)
     {
@@ -154,7 +163,26 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
         #if ENABLE_NWIOT_DEBUGLOGS
         CLog::Log(LOGNOTICE, "**MN** - CNWIoT::Announce() - Playback stopped");
         #endif
-
+        CFileItem currentFile(g_application.CurrentFileItem());
+        std::string strPath = currentFile.GetPath();
+        std::string assetID = URIUtils::GetFileName(strPath);
+        URIUtils::RemoveExtension(assetID);
+        std::string format = currentFile.GetProperty("video_format").asString();
+        CDateTime time = CDateTime::GetCurrentDateTime();
+        std::string payload = StringUtils::Format("%s,%s,%s",
+          time.GetAsDBDateTime().c_str(),
+          assetID.c_str(),
+          format.c_str()
+        );
+        // { machineId: ‘’, eventType: ‘’, details: { } }
+        CVariant payloadObject;
+        std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+        payloadObject["machineId"] = uuid;
+        payloadObject["eventType"] = "playbackStop";
+        payloadObject["details"] = payload;
+        std::string payloadStr;
+        CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+        CNWIoT::setPayload(payloadStr);
       }
     }
     else if (strcmp(message, "MNmsg") == 0)
@@ -170,7 +198,15 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
         }
         if (data["msg"] == "about")
         {
-          CNWIoT::setPayload(data["payload"].asString());
+          // { machineId: ‘’, eventType: ‘’, details: { } }
+          CVariant payloadObject;
+          std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+          payloadObject["machineId"] = uuid;
+          payloadObject["eventType"] = "about";
+          payloadObject["details"] = data["payload"].asString();
+          std::string payloadStr;
+          CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+          CNWIoT::setPayload(payloadStr);
         }
       }
     }
