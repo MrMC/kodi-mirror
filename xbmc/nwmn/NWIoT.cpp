@@ -150,8 +150,10 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
       CVariant payloadObject;
       std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
       payloadObject["machineId"] = uuid;
-      payloadObject["eventType"] = "playbackStart";
-      payloadObject["details"] = payload;
+      payloadObject["type"] = "playbackStart";
+      payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+      payloadObject["details"]["assetId"] = assetID;
+      payloadObject["details"]["raw"] = payload;
       std::string payloadStr;
       CJSONVariantWriter::Write(payloadObject, payloadStr, false);
       CNWIoT::setPayload(payloadStr);
@@ -174,12 +176,21 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
           assetID.c_str(),
           format.c_str()
         );
-        // { machineId: ‘’, eventType: ‘’, details: { } }
+        /*
+        {
+          "machineId": "98:01:A7:90:8C:BF",
+          "timestamp": "2020-10-21 21:33:31",
+          "type": "playbackStart",
+          "details": { "assetId": "7B81E1D4-C8BF-4B98-B651-F1951BFB0456", "raw": "2020-10-21 21:33:31,7B81E1D4-C8BF-4B98-B651-F1951BFB0456" }
+        }
+        */
         CVariant payloadObject;
         std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
         payloadObject["machineId"] = uuid;
-        payloadObject["eventType"] = "playbackStop";
-        payloadObject["details"] = payload;
+        payloadObject["type"] = "playbackStop";
+        payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+        payloadObject["details"]["assetId"] = assetID;
+        payloadObject["details"]["raw"] = payload;
         std::string payloadStr;
         CJSONVariantWriter::Write(payloadObject, payloadStr, false);
         CNWIoT::setPayload(payloadStr);
@@ -202,8 +213,12 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const char *sender, c
           CVariant payloadObject;
           std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
           payloadObject["machineId"] = uuid;
-          payloadObject["eventType"] = "about";
+          payloadObject["type"] = "about";
           payloadObject["details"] = data["payload"].asString();
+          CDateTime time = CDateTime::GetCurrentDateTime();
+          payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+//          payloadObject["details"]["assetId"] = assetID;
+          payloadObject["details"]["raw"] = data["payload"].asString();
           std::string payloadStr;
           CJSONVariantWriter::Write(payloadObject, payloadStr, false);
           CNWIoT::setPayload(payloadStr);
