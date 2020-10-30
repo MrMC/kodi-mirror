@@ -415,6 +415,12 @@ public:
   static const int MUSICLIBRARY_ARTWORK_LEVEL_CUSTOM = 2;
   static const int MUSICLIBRARY_ARTWORK_LEVEL_NONE = 3;
 
+  // NWMN settings strings
+  static const std::string MN_URL;
+  static const std::string MN_MACHINE_ID;
+  static const std::string MN_LOCATION_ID;
+  static const std::string MN_VERTICAL;
+
   /*!
    \brief Creates a new settings wrapper around a new settings manager.
 

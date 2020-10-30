@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xml:lang="en" lang="en">
+	<head>
+		<title>MemberNetTV</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="copyright" content="pimaxplus.com" />
+		<meta name="description" content="" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+		<link rel="apple-touch-icon" href="images/pimaxplus-touch.png" />
+		<link rel="apple-touch-icon-precomposed" href="images/pimaxplus-touch.png" />
+
+        <!-- Bootstrap CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+
+		<link href="css/style.css" rel="stylesheet" media="screen">
+	</head>
+	<body>
+        <div id="header">
+            <div class="navbar navbar-inverse navbar-fixed-top">
+              <div class="navbar-inner">
+                <div class="container-fluid">
+                  <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </a>
+                  <a class="brand" href="#"><img src="img/nw-logo.png" /></a>
+                  <div class="nav-collapse collapse">
+                    <div class="clearfix"></div>
+                    <ul class="nav">
+                      <ul class="nav">
+                            <li class="active"><a href="index.html">Home</a></li>
+                            <li><a href="log.html">Nationwide Log</a></li>
+                            <li><a href="logold.html">Nationwide Log Old</a></li>
+                            <!-- <li><a href="logcat.html">Logcat</a></li> -->
+                            <!-- <li><a href="machinesettings.html">Machine Settings</a></li> -->
+                        </ul>
+                    </ul>
+                  </div><!--/.nav-collapse -->
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="row-fluid">
+                <div class="span8">
+                    <h3>Playlist</h3>
+                    <table id="playlist" class="table table-striped" data-type="xbmc-playlist">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Production Co.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playlistContainer" data-type="xbmc-playlist-itemcontainer">
+                            <tr class="item" data-type="xbmc-playlist-itemtemplate">
+                                <td data-property="title"></td>
+                                <td data-property="genre"></td>
+                                <td data-property="studio,albumartist"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="span4" data-type="xbmc-player-controls">
+                    <h3>Media Player</h3>
+                    <a href="#" class="btn btn-small" data-toggle="xbmc-player-previous"><i class="icon-backward"></i> Prev</a>
+                    <a href="#" class="btn btn-small" data-toggle="xbmc-player-stop"><i class="icon-stop"></i> Stop</a>
+                    <a href="#" class="btn btn-small" data-toggle="xbmc-player-playPause"><i class="icon-play"></i> Play</a>
+                    <a href="#" class="btn btn-small" data-toggle="xbmc-player-next"><i class="icon-forward"></i> Next</a>
+                </div>
+            </div> <!-- /row -->
+        </div> <!-- /content -->
+
+        <!-- JS files -->
+        <script type="text/javascript" src="scripts/jquery-1.9.0.min.js"></script>
+        <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/nationwide.app.js"></script>
+	</body>
+</html>

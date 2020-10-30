@@ -343,7 +343,6 @@ case $host in
     platform_cflags="-fheinous-gnu-extensions -no-cpp-precomp"
     platform_ldflags="-Wl,-search_paths_first"
     platform_cxxflags="-no-cpp-precomp"
-
     case $use_platform in
       tvos)
         target_platform=appletvos

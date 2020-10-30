@@ -516,11 +516,15 @@ bool CUtil::IsPicture(const std::string& strFile)
 
 std::string CUtil::GetSplashPath()
 {
-  std::array<std::string, 4> candidates {{ "special://home/media/splash.jpg", "special://home/media/splash.png", "special://xbmc/media/splash.jpg", "special://xbmc/media/splash.png" }};
-  auto it = std::find_if(candidates.begin(), candidates.end(), [](std::string const& file) { return XFILE::CFile::Exists(file); });
-  if (it == candidates.end())
-    throw std::runtime_error("No splash image found");
-  return CSpecialProtocol::TranslatePathConvertCase(*it);
+//  std::array<std::string, 4> candidates {{ "special://home/media/splash.jpg", "special://home/media/splash.png", "special://xbmc/media/splash.jpg", "special://xbmc/media/splash.png" }};
+//  auto it = std::find_if(candidates.begin(), candidates.end(), [](std::string const& file) { return XFILE::CFile::Exists(file); });
+//  if (it == candidates.end())
+//    throw std::runtime_error("No splash image found");
+
+  std::string splashImage = "special://home/media/splash.png";
+  if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool((CSettings::MN_VERTICAL)))
+    splashImage = "special://xbmc/media/splashvertical.png";
+  return CSpecialProtocol::TranslatePathConvertCase(splashImage);
 }
 
 bool CUtil::ExcludeFileOrFolder(const std::string& strFileOrFolder, const std::vector<std::string>& regexps)

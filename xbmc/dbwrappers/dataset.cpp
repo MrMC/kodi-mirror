@@ -118,7 +118,7 @@ Dataset::~Dataset() {
 }
 
 
-void Dataset::setSqlParams(const char *sqlFrmt, sqlType t, ...) {
+void Dataset::setSqlParams(const char *sqlFrmt, int t, ...) {
   va_list ap;
   char sqlCmd[DB_BUFF_MAX+1];
 

@@ -91,6 +91,8 @@ bool CEncoderFFmpeg::Init(AddonToKodiFuncTable_AudioEncoder& callbacks)
     return false;
   }
 
+  // turn off ffmpeg deprecated warning spew
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   /* set the stream's parameters */
   m_CodecCtx                 = m_Stream->codec;
   m_CodecCtx->codec_id       = codec->id;

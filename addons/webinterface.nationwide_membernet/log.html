@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<script>
+  function randomIntFromInterval(min,max)
+  {
+      return Math.floor(Math.random()*(max-min+1)+min);
+  }
+  function updateIframe (iframeName)
+  {
+    window.frames[iframeName].location = "vfs%2Fspecial%3A%2F%2Flogpath%2Fmembernettvultra.log" + "?r=" +randomIntFromInterval(7,1457890);
+  }
+  function resizeIframe(obj) {
+    var html = document.documentElement;
+    var body = document.getElementsByTagName("body")[0];
+    var height = Math.max( body.scrollHeight, body.offsetHeight, 
+                       html.clientHeight, html.scrollHeight, html.offsetHeight );
+    obj.style.height = height - 220 + 'px';
+  }
+  function DoCopy (iframeName)
+  {
+    if (window.frames && window.frames[iframeName] &&
+    window.frames[iframeName].document &&
+    window.frames[iframeName].document.body &&
+    window.frames[iframeName].document.body.innerText)
+    {
+      var txt = window.frames[iframeName].document.body.innerText;
+      copyTextToClipboard(txt);
+    }
+  }
+  function copyTextToClipboard(text)
+  {
+    var textArea = document.createElement("textarea");
+    var textAreaHeader = "##############################################################\nContent of MemberNetTV Log\n##############################################################\n\n"
+    textArea.style.position = 'fixed';
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = 0;
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    textArea.value = textAreaHeader + text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try
+    {
+      var successful = document.execCommand('copy');
+      window.alert("MemberNetTV Log was copied to clipboard");
+    }
+    catch (err)
+    {
+      window.alert("MemberNetTV Log was NOT copied to clipboard, select all content and copy manually");
+    }
+    document.body.removeChild(textArea);
+  }
+</script>
+<html xml:lang="en" lang="en">
+	<head>
+		<title>MemberNetTV</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="copyright" content="pimaxplus.com" />
+		<meta name="description" content="" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+		<link rel="apple-touch-icon" href="images/pimaxplus-touch.png" />
+		<link rel="apple-touch-icon-precomposed" href="images/pimaxplus-touch.png" />
+
+        <!-- Bootstrap CSS -->
+        <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+
+		<link href="css/style.css" rel="stylesheet" media="screen">
+	</head>
+	<body>
+        <div id="header">
+            <div class="navbar navbar-inverse navbar-fixed-top">
+              <div class="navbar-inner">
+                <div class="container-fluid">
+                  <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </a>
+                  <a class="brand" href="#"><img src="img/nw-logo.png" /></a>
+                  <div class="nav-collapse collapse">
+                    <div class="clearfix"></div>
+                    <ul class="nav">
+                      <ul class="nav">
+                            <li><a href="index.html">Home</a></li>
+                            <li class="active"><a href="log.html">Nationwide Log</a></li>
+                            <li><a href="logold.html">Nationwide Log Old</a></li>
+                            <!-- <li><a href="logcat.html">Logcat</a></li> -->
+                            <!-- <li class="active"><a href="machinesettings.html">Machine Settings</a></li> -->
+                        </ul>
+                    </ul>
+                  </div><!--/.nav-collapse -->
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="list">
+              <p>
+                <button name="Copy" value="Copy" OnClick="DoCopy('log')">Copy Log Content</button>
+                <iframe name="log" src="" onload="resizeIframe(this)" width="95%"></iframe></p>
+                <script>updateIframe ("log");</script>
+                
+            </div>
+        </div> <!-- /content -->
+
+        <!-- JS files -->
+        <script type="text/javascript" src="scripts/jquery-1.9.0.min.js"></script>
+        <script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+        <script type="text/javascript" src="scripts/nationwide.app.js"></script>
+	</body>
+</html>

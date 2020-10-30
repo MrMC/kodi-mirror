@@ -2538,6 +2538,24 @@
       "additionalProperties": { "type": "string" }
     }
   },
+  "MN.SaveSettings": {
+    "type": "method",
+    "description": "Executes the given addon with the given parameters (if possible)",
+    "transport": "Response",
+    "permission": "ExecuteAddon",
+    "params": [
+      { "name": "addonid", "type": "string", "required": true },
+      { "name": "params", "type": [
+          { "type": "object", "additionalProperties": { "type": "string" } },
+          { "type": "array", "items": { "type": "string" } },
+          { "type": "string", "description": "URL path (must start with / or ?" }
+        ],
+        "default": ""
+      },
+      { "name": "wait", "type": "boolean", "default": false }
+    ],
+    "returns": "string"
+  },
   "Favourites.GetFavourites": {
     "type": "method",
     "description": "Retrieve all favourites",

@@ -1,0 +1,327 @@
+<window id="28">
+	<defaultcontrol always="true">50</defaultcontrol>
+	<allowoverlay>no</allowoverlay>
+	<views>50</views>
+	<controls>
+        <control type="image">
+          <visible>!system.getbool(mn.vertical)</visible>
+          <description>Background</description>
+          <posx>0</posx>
+          <posy>0</posy>
+          <width>1280</width>
+          <height>720</height>
+          <texture>MNSkinFiles/OnDemandH.png</texture>
+        </control>
+        <control type="image">
+          <visible>system.getbool(mn.vertical)</visible>
+          <posx>0</posx>
+          <posy>0</posy>
+          <width>1280</width>
+          <height>720</height>
+          <texture>MNSkinFiles/OnDemandV.png</texture>
+        </control>
+        <!-- Horizontal Layout -->
+        <control type="group">
+            <visible>!system.getbool(mn.vertical)</visible> 
+            <control type="list" id="50">
+                <posx>70</posx>
+                <posy>80</posy>
+                <width>690</width>
+                <height>495</height>
+                <onleft>80102</onleft>
+                <onright>1050</onright>
+                <onup>50</onup>
+                <ondown>50</ondown>
+                <viewtype label="535">list</viewtype>
+                <scrolltime>200</scrolltime>
+                <itemlayout height="50.2" width="450">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>400</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/button.png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>13</posx>
+                        <posy>5</posy>
+                        <width>390</width>
+                        <height>30</height>
+                        <font>Button20</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </itemlayout>
+                <focusedlayout height="50.2" width="450">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>400</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/buttonSelected.png</texture>
+                        <visible>Control.HasFocus(50)</visible>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>400</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/button.png</texture>
+                        <visible>!Control.HasFocus(50)</visible>
+                    </control>
+                    <control type="label">
+                        <posx>13</posx>
+                        <posy>5</posy>
+                        <width>390</width>
+                        <height>30</height>
+                        <font>Button20</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </focusedlayout>
+            </control>
+        </control>
+        <!-- Vertical Layout -->
+        <control type="group">
+            <visible>system.getbool(mn.vertical)</visible>
+            <control type="group">
+                <animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+                  <effect type="slide" start="0,0" end="46,177" time="0" />
+                  <effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+                </animation>
+                <control type="panel" id="50">
+                    <posx>120</posx>
+                    <posy>105</posy>
+                    <width>690</width>
+                    <height>205</height>
+                    <onleft>1050</onleft>
+                    <onright>1050</onright>
+                    <onup>50</onup>
+                    <ondown>50</ondown>
+                    <viewtype label="535">list</viewtype>
+                    <scrolltime>200</scrolltime>
+                    <!-- <orientation>vertical</orientation> -->
+                <itemlayout height="50.2" width="340">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>340</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/button.png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>13</posx>
+                        <posy>5</posy>
+                        <width>330</width>
+                        <height>30</height>
+                        <font>Label18</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </itemlayout>
+                <focusedlayout height="50.2" width="340">
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>340</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/buttonSelected.png</texture>
+                        <visible>Control.HasFocus(50)</visible>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>340</width>
+                        <height>40</height>
+                        <texture>MNSkinFiles/button.png</texture>
+                        <visible>!Control.HasFocus(50)</visible>
+                    </control>
+                    <control type="label">
+                        <posx>13</posx>
+                        <posy>5</posy>
+                        <width>330</width>
+                        <height>30</height>
+                        <font>Label18</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>left</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </focusedlayout>
+                </control>
+            </control>   
+        </control>        
+        <!-- below panel for section items -->
+        <control type="group">
+            <animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+              <effect type="slide" start="0,0" end="-210,-213" time="0" />
+              <effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+            </animation>
+            <control type="panel" id="1050">
+                <posx>523</posx>
+                <posy>80</posy>
+                <width>800</width>
+                <height>560</height>
+                <onleft>50</onleft>
+                <onright>80101</onright>
+                <onup>1050</onup>
+                <ondown>1050</ondown>
+                <viewtype label="">list</viewtype>
+                <pagecontrol>61</pagecontrol>
+                <scrolltime>200</scrolltime>
+                <orientation>vertical</orientation>
+                <itemlayout height="160" width="240">
+                    <control type="image">
+                        <description>Item Thumb</description>
+                        <posx>1</posx>
+                        <posy>1</posy>
+                        <width>220</width>
+                        <height>126</height>
+                        <texture>MNSkinFiles/preview_background.png</texture>
+                    </control>
+                    <control type="image">
+                        <description>Item Thumb</description>
+                        <posx>1</posx>
+                        <posy>1</posy>
+                        <width>220</width>
+                        <height>126</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture>$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="label">
+                        <posx>1</posx>
+                        <posy>128</posy>
+                        <width>218</width>
+                        <height>30</height>
+                        <font>Label16</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </itemlayout>
+                <focusedlayout height="160" width="240">
+                    <control type="image">
+                        <description>Item Thumb</description>
+                        <posx>1</posx>
+                        <posy>1</posy>
+                        <width>220</width>
+                        <height>126</height>
+                        <texture>MNSkinFiles/preview_background.png</texture>
+                    </control>
+                    <control type="image">
+                        <description>Item Thumb</description>
+                        <posx>1</posx>
+                        <posy>1</posy>
+                        <width>220</width>
+                        <height>126</height>
+                        <aspectratio>keep</aspectratio>
+                        <texture>$INFO[ListItem.Art(thumb)]</texture>
+                    </control>
+                    <control type="image">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>222</width>
+                        <height>128</height>
+                        <texture>MNSkinFiles/preview_frame_yellow.png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>1</posx>
+                        <posy>128</posy>
+                        <width>218</width>
+                        <height>30</height>
+                        <font>Label16</font>
+                        <textcolor>white</textcolor>
+                        <selectedcolor>white</selectedcolor>
+                        <align>center</align>
+                        <aligny>center</aligny>
+                        <label>$INFO[ListItem.Label]</label>
+                    </control>
+                </focusedlayout>
+            </control>
+        </control>
+        <control type="group" id="80200">
+            <control type="group">
+                <visible>!system.getbool(mn.vertical)</visible>
+                <control type="button" id="80101">
+                    <posx>550</posx>
+                    <posy>635</posy>
+                    <label>Return to Playlist</label>
+                    <onleft>50</onleft>
+                    <onright>80102</onright>
+                    <onup>1050</onup>
+                    <ondown>1050</ondown>
+                    <include>MNButtonSettings</include>
+                </control>
+                <control type="button" id="80102">
+                    <description>Back</description>
+                    <posx>900</posx>
+                    <posy>635</posy>
+                    <label>Return to Main Menu</label>
+                    <onleft>80101</onleft>
+                    <onright>50</onright>
+                    <onup>1050</onup>
+                    <ondown>1050</ondown>
+                    <include>MNButtonSettings</include>
+                    <onclick>back</onclick>
+                </control>
+            </control>
+            <control type="group">
+                <visible>system.getbool(mn.vertical)</visible>
+                <animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+                  <effect type="slide" start="0,0" end="-225,-240" time="0" />
+                  <effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+                </animation>
+                <control type="button" id="80101">
+                    <posx>550</posx>
+                    <posy>635</posy>
+                    <label>Return to Playlist</label>
+                    <onleft>50</onleft>
+                    <onright>80102</onright>
+                    <onup>1050</onup>
+                    <ondown>1050</ondown>
+                    <include>MNButtonSettings</include>
+                </control>
+                <control type="button" id="80102">
+                    <description>Back</description>
+                    <posx>900</posx>
+                    <posy>635</posy>
+                    <label>Return to Main Menu</label>
+                    <onleft>80101</onleft>
+                    <onright>50</onright>
+                    <onup>1050</onup>
+                    <ondown>1050</ondown>
+                    <include>MNButtonSettings</include>
+                    <onclick>back</onclick>
+                </control>
+            </control>
+        </control>    
+        <control type="group">
+            <visible>Player.HasVideo</visible>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1280</width>
+                <height>720</height>
+                <texture>background.png</texture>
+            </control>
+            <control type="videowindow">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1280</width>
+                <height>720</height>
+            </control>
+        </control>
+	</controls>
+</window>

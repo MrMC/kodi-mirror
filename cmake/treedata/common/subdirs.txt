@@ -45,6 +45,7 @@ xbmc/input/mouse/generic                        input/mouse/generic
 xbmc/listproviders                              listproviders
 xbmc/messaging                                  messaging
 xbmc/messaging/helpers                          messagingHelpers
+xbmc/nwmn                                       nwmn
 xbmc/pictures                                   pictures
 xbmc/platform                                   platform
 xbmc/playlists                                  playlists

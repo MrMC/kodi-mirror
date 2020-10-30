@@ -1,0 +1,535 @@
+<window>
+	<allowoverlay>no</allowoverlay>
+	<defaultcontrol always="true">90102</defaultcontrol>
+	<coordinates>
+		<system>1</system>
+		<posx>0</posx>
+		<posy>0</posy>
+	</coordinates>
+	<controls>
+		<control type="group" id="90500">
+			<!-- Horizontal layout -->
+			<control type="group">
+				<visible>!system.getbool(mn.vertical)</visible>
+				<control type="image">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>1280</width>
+					<height>720</height>
+					<texture>MNSkinFiles/MainH.png</texture>
+				</control>
+				 <control type="label">
+			        <posx>103</posx>
+			        <posy>25</posy>
+			        <width max="306">auto</width>
+			        <align>center</align>
+			        <aligny>center</aligny>
+			        <scroll>false</scroll>
+			        <label>View specific content for[CR]product demos.</label>
+			        <font>HomeScreen33</font>
+			        <textcolor>white</textcolor>
+			        <shadowcolor>black</shadowcolor>
+			        <wrapmultiline>false</wrapmultiline>
+			        <scrollspeed>50</scrollspeed>
+				</control>
+				<control type="button" id="90102">
+					<description>On-Demand</description>
+					<posx>103</posx>
+					<posy>440</posy>
+					<label>View On-Demand Content</label>
+					<onleft>9016</onleft>
+					<onright>90101</onright>
+					<onup>90102</onup>
+					<ondown>90102</ondown>
+					<include>MNButton</include>
+				</control>			 
+				<control type="label">
+			        <posx>487</posx>
+			        <posy>25</posy>
+			        <width max="306">auto</width>
+			        <align>center</align>
+			        <aligny>center</aligny>
+			        <scroll>false</scroll>
+			        <label>This will play the playlist[CR]created on nationwides[CR]membernet website.</label>
+			        <font>HomeScreen33</font>
+			        <textcolor>white</textcolor>
+			        <shadowcolor>black</shadowcolor>
+			        <wrapmultiline>false</wrapmultiline>
+			        <scrollspeed>50</scrollspeed>
+				</control>
+				<control type="button" id="90101">
+					<description>Playlist</description>
+					<posx>487</posx>
+					<posy>440</posy>
+					<label>Playlist</label>
+					<onleft>90102</onleft>
+					<onright>9016</onright>
+					<onup>90101</onup>
+					<ondown>90101</ondown>
+					<include>MNButton</include>
+				</control>
+				<control type="label">
+			        <posx>871</posx>
+			        <posy>25</posy>
+			        <width max="306">auto</width>
+			        <align>center</align>
+			        <aligny>center</aligny>
+			        <scroll>false</scroll>
+			        <label>Setup your internet[CR]connection, screen format,[CR]and more.</label>
+			        <font>HomeScreen33</font>
+			        <textcolor>white</textcolor>
+			        <shadowcolor>black</shadowcolor>
+			        <wrapmultiline>false</wrapmultiline>
+			        <scrollspeed>50</scrollspeed>
+				</control>
+				<control type="button" id="9016">
+					<description>Settings</description>
+					<posx>871</posx>
+					<posy>440</posy>
+					<label>System Settings</label>
+					<onleft>90101</onleft>
+					<onright>90102</onright>
+					<onup>9016</onup>
+					<ondown>90150</ondown>
+					<include>MNButton</include>
+				</control>
+				<control type="group">
+					<visible>!Control.isVisible(90145) + !Control.isVisible(90200) +  !Window.IsVisible(progressdialog) + [Control.HasFocus(9016) | Control.HasFocus(90103) | Control.HasFocus(90105) | Control.HasFocus(90125) | Control.HasFocus(90126) | Control.HasFocus(90134) | Control.HasFocus(90144) | Control.HasFocus(90150)]</visible>
+					<control type="button" id="90150">
+						<description>Authorize</description>
+						<posx>871</posx>
+						<posy>481</posy>
+						<label>Authorize</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>9016</onup>
+						<ondown>90103</ondown>
+						<include>MNButtonSettings</include>
+					</control>
+					<control type="button" id="90103">
+						<description>Media Content Update</description>
+						<posx>871</posx>
+						<posy>511</posy>
+						<label>Media Content Update</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>90150</onup>
+						<ondown>90105</ondown>
+						<include>MNButtonSettings</include>
+					</control>
+					<control type="button" id="90105">
+						<description>About</description>
+						<posx>871</posx>
+						<posy>541</posy>
+						<label>About</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>90103</onup>
+						<ondown>90125</ondown>
+						<include>MNButtonSettings</include>
+					</control>
+					<control type="button" id="90125">
+						<description>Network Setup</description>
+						<posx>871</posx>
+						<posy>571</posy>
+						<label>Network Setup</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>90105</onup>
+						<ondown>90126</ondown>
+						<include>MNButtonSettings</include>
+						<onclick>RunAddon(service.libreelec.settings)</onclick>
+					</control>
+					<control type="button" id="90126">
+						<description>Network Test</description>
+						<posx>871</posx>
+						<posy>601</posy>
+						<label>Network Test</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>90125</onup>
+						<ondown>90134</ondown>
+						<include>MNButtonSettings</include>
+					</control>
+					<control type="button" id="90134">
+						<description>Set Vertical</description>
+						<posx>871</posx>
+						<posy>631</posy>
+						<label>Vertical</label>
+						<onleft>90102</onleft>
+						<onright>90101</onright>
+						<onup>90126</onup>
+						<ondown>9016</ondown>
+						<include>MNButtonSettings</include>
+					</control>
+				</control>	
+			</control>
+			<!-- Vertical layout -->
+			<control type="group">
+				<visible>system.getbool(mn.vertical)</visible>
+				<control type="image">
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>1280</width>
+					<height>720</height>
+					<texture>MNSkinFiles/MainV.png</texture>
+				</control>
+				<control type="group">
+					<animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+							<effect type="slide" start="0,0" end="0,0" time="0" />
+							<effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+					</animation>		
+					 <control type="label">
+				        <posx>470</posx>
+				        <posy>0</posy>
+				        <width max="347">auto</width>
+				        <align>center</align>
+				        <aligny>center</aligny>
+				        <scroll>false</scroll>
+				        <label>View specific Content for[CR]product demos.</label>
+				        <font>HomeScreen33</font>
+				        <textcolor>white</textcolor>
+				        <shadowcolor>black</shadowcolor>
+				        <wrapmultiline>false</wrapmultiline>
+				        <scrollspeed>50</scrollspeed>
+					</control>
+					<control type="button" id="90102">
+						<description>On-Demand</description>
+						<posx>490</posx>
+						<posy>400</posy>
+						<label>View On-Demand Content</label>
+						<onleft>90102</onleft>
+						<onright>90102</onright>
+						<onup>9016</onup>
+						<ondown>90101</ondown>
+						<include>MNButton</include>
+					</control>			 
+					<control type="label">
+				        <posx>470</posx>
+				        <posy>305</posy>
+				        <width max="347">auto</width>
+				        <align>center</align>
+				        <aligny>center</aligny>
+				        <scroll>false</scroll>
+				        <label>This will play the playlist[CR]created on nationwides[CR]membernet website.</label>
+				        <font>HomeScreen33</font>
+				        <textcolor>white</textcolor>
+				        <shadowcolor>black</shadowcolor>
+				        <wrapmultiline>false</wrapmultiline>
+				        <scrollspeed>50</scrollspeed>
+					</control>
+					<control type="button" id="90101">
+						<description>Playlist</description>
+						<posx>490</posx>
+						<posy>575</posy>
+						<label>Playlist</label>
+						<onleft>90101</onleft>
+						<onright>90101</onright>
+						<onup>90102</onup>
+						<ondown>9016</ondown>
+						<include>MNButton</include>
+					</control>
+					<control type="label">
+				        <posx>470</posx>
+				        <posy>640</posy>
+				        <width max="347">auto</width>
+				        <align>center</align>
+				        <aligny>center</aligny>
+				        <scroll>false</scroll>
+				        <label>Setup your internet[CR]connection, screen format,[CR]and more.</label>
+				        <font>HomeScreen33</font>
+				        <textcolor>white</textcolor>
+				        <shadowcolor>black</shadowcolor>
+				        <wrapmultiline>false</wrapmultiline>
+				        <scrollspeed>50</scrollspeed>
+					</control>
+					<control type="button" id="9016">
+						<description>Settings</description>
+						<posx>490</posx>
+						<posy>740</posy>
+						<label>System Settings</label>
+						<onleft>9016</onleft>
+						<onright>9016</onright>
+						<onup>90101</onup>
+						<ondown>90150</ondown>
+						<include>MNButton</include>
+					</control>
+					<control type="group">
+						<visible>!Control.isVisible(90145) + !Control.isVisible(90200) +  !Window.IsVisible(progressdialog) + [Control.HasFocus(9016) | Control.HasFocus(90103) | Control.HasFocus(90105) | Control.HasFocus(90125) | Control.HasFocus(90126) | Control.HasFocus(90134) | Control.HasFocus(90144) | Control.HasFocus(90150)]</visible>
+						<control type="button" id="90150">
+							<description>Authorize</description>
+							<posx>490</posx>
+							<posy>779</posy>
+							<label>Authorize</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>9016</onup>
+							<ondown>90103</ondown>
+							<include>MNButtonSettings</include>
+						</control>
+						<control type="button" id="90103">
+							<description>Media Content Update</description>
+							<posx>490</posx>
+							<posy>809</posy>
+							<label>Media Content Update</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>90150</onup>
+							<ondown>90105</ondown>
+							<include>MNButtonSettings</include>
+						</control>
+						<control type="button" id="90105">
+							<description>About</description>
+							<posx>490</posx>
+							<posy>839</posy>
+							<label>About</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>90103</onup>
+							<ondown>90126</ondown>
+							<include>MNButtonSettings</include>
+						</control>
+						<control type="button" id="90125">
+							<description>Network Setup</description>
+							<posx>490</posx>
+							<posy>869</posy>
+							<label>Network Setup</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>90105</onup>
+							<ondown>90126</ondown>
+							<include>MNButtonSettings</include>
+							<onclick>RunAddon(service.libreelec.settings)</onclick>
+						</control>
+						<control type="button" id="90126">
+							<description>Network Test</description>
+							<posx>490</posx>
+							<posy>899</posy>
+							<label>Network Test</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>90125</onup>
+							<ondown>90144</ondown>
+							<include>MNButtonSettings</include>
+						</control>
+						<control type="button" id="90144">
+							<description>Set Horizontal</description>
+							<posx>490</posx>
+							<posy>929</posy>
+							<label>Horizontal</label>
+							<onleft>90102</onleft>
+							<onright>90101</onright>
+							<onup>90126</onup>
+							<ondown>9016</ondown>
+							<include>MNButtonSettings</include>
+						</control>
+					</control>	
+				</control>	
+			</control>
+			<!-- Network test -->
+			<control type="group">
+				<animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+					<effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+					<effect type="slide" start="0,0" end="300,-55" time="0" />
+				</animation>
+				<animation effect="slide" start="0,-100" end="0,0"  time="400" tween="quadratic" easing="out">Visible</animation>
+				<animation effect="slide" start="0,0" end="0,-100"  time="400" tween="quadratic" easing="out">Hidden</animation>
+				<control type="group" id="90145">
+					<posx>50</posx>
+					<posy>515</posy>
+					<width>500</width>
+					<height>155</height>
+					<visible>false</visible>
+					<animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+						<effect type="slide" start="0,0" end="50,305" time="0" />
+					</animation>        
+					<animation effect="slide" start="0,100" end="0,0"  time="400" tween="quadratic" easing="out">Visible</animation>
+					<animation effect="slide" start="0,0" end="0,100" time="200" tween="quadratic" easing="out">Hidden</animation>
+					<control type="image">
+						<description>background image</description>
+						<posx>-30</posx>
+						<posy>-10</posy>
+						<width>480</width>
+						<height>240</height>
+						<texture>MNSkinFiles/popupBack.png</texture>
+					</control>
+					<control type="label">
+						<description>header label</description>
+						<posx>55</posx>
+						<posy>10</posy>
+						<width>300</width>
+						<height>30</height>
+						<font>Button20</font>
+						<label>Network Test Results</label>
+						<align>center</align>
+						<aligny>center</aligny>
+						<textcolor>white</textcolor>
+					</control>
+					<control type="grouplist" id="90146">
+						<posx>5</posx>
+						<posy>40</posy>          
+						<align>center</align>       
+						<itemgap>0</itemgap> 
+						<control type="label" id="90147">
+							<width>440</width>
+							<height>28</height>
+							<align>left</align>
+							<aligny>center</aligny>
+							<font>Label18</font>
+							<textcolor>white</textcolor>
+							<label>'www.google.com' --> testing</label>
+						</control> 
+						<control type="label" id="90148">
+							<width>440</width>
+							<height>28</height>
+							<align>left</align>
+							<aligny>center</aligny>
+							<font>Label18</font>
+							<textcolor>white</textcolor>
+							<label>'www.nationwidemember.com' --> testing</label>
+						</control>     
+					</control>
+				</control>
+			</control>
+		</control>
+		<!-- About popup -->
+		<control type="group" id="90200">
+			<posx>340</posx>
+			<posy>200</posy>
+			<animation type="Conditional" condition="system.getbool(mn.vertical)" reversible="false">
+				<effect type="slide" start="0,0" end="-150,60" time="0" />
+				<effect type="rotate" center="auto" start="-90" end="-90" time="0" />
+			</animation>
+			<visible>false</visible>
+			<control type="image">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>600</width>
+				<height>420</height>
+				<texture>MNSkinFiles/popupBack.png</texture>
+			</control>
+			<control type="label">
+				<posx>10</posx>
+				<posy>10</posy>
+				<width>580</width>
+				<height>60</height>
+				<font>Button24</font>
+				<textcolor>white</textcolor>
+				<align>center</align>
+				<aligny>center</aligny>
+				<label>MemberNet TV Information</label>
+			</control>
+			<control type="group">
+				<posx>10</posx>
+				<control type="label" id="90210">
+					<posy>80</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>HomeScreen38</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90211">
+					<posy>110</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90212">
+					<posy>140</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90213">
+					<posy>170</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90214">
+					<posy>200</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90215">
+					<posy>230</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90216">
+					<posy>260</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90217">
+					<posy>290</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label" id="90218">
+					<posy>320</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+				<control type="label"id="90219">
+					<posy>350</posy>
+					<width>580</width>
+					<height>30</height>
+					<font>Button20</font>
+					<textcolor>white</textcolor>
+					<align>left</align>
+					<aligny>center</aligny>
+				</control>
+			</control>	
+		</control>
+		<!-- Video player -->		
+		<control type="group">
+			<visible>Player.HasVideo</visible>
+			<control type="image">
+				<description>background</description>
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>1280</width>
+				<height>720</height>
+				<texture>background.png</texture>
+			</control>
+			<control type="videowindow">
+				<posx>0</posx>
+				<posy>0</posy>
+				<width>1280</width>
+				<height>720</height>
+			</control>
+		</control>	
+	</controls>
+</window>

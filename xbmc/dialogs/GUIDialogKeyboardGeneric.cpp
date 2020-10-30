@@ -76,7 +76,7 @@ CGUIDialogKeyboardGeneric::CGUIDialogKeyboardGeneric()
   m_bIsConfirmed = false;
   m_bShift = false;
   m_hiddenInput = false;
-  m_keyType = LOWER;
+  m_keyType = CAPS;
   m_currentLayout = 0;
   m_loadType = KEEP_IN_MEMORY;
   m_isKeyboardNavigationMode = false;
@@ -187,7 +187,12 @@ bool CGUIDialogKeyboardGeneric::OnAction(const CAction &action)
   int actionId = action.GetID();
   bool handled = true;
   if (actionId == (KEY_VKEY | XBMCVK_BACK))
-    Backspace();
+  {
+    if (m_text.empty())
+      OnOK();
+    else
+      Backspace();
+  }
   else if (actionId == ACTION_ENTER ||
            (actionId == ACTION_SELECT_ITEM && (m_isKeyboardNavigationMode || GetFocusedControlID() == CTL_EDIT)))
     OnOK();

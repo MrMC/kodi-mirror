@@ -21,8 +21,9 @@
     #include <GL/gl.h>
     #include <GL/glu.h>
   #elif defined(TARGET_DARWIN)
-    #include <OpenGL/gl3.h>
+    #define GL_DO_NOT_WARN_IF_MULTI_GL_VERSION_HEADERS_INCLUDED
     #include <OpenGL/glu.h>
+    #include <OpenGL/gl3.h>
     #include <OpenGL/gl3ext.h>
   #endif
 #elif HAS_GLES >= 2

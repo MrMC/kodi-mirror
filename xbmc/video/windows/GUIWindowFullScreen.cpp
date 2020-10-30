@@ -32,6 +32,8 @@
 #include "guilib/guiinfo/GUIInfoLabels.h"
 #include "video/ViewModeSettings.h"
 
+#include "nwmn/NWClient.h"
+
 #include <stdio.h>
 #include <algorithm>
 #if defined(TARGET_DARWIN)
@@ -79,6 +81,30 @@ CGUIWindowFullScreen::~CGUIWindowFullScreen(void)
 
 bool CGUIWindowFullScreen::OnAction(const CAction &action)
 {
+  // MN doesnt need any onAction
+  if (action.GetID() == ACTION_STOP)
+    return CGUIWindow::OnAction(action);
+  else
+  {
+    if (action.GetID() == ACTION_PAUSE ||
+        (action.GetID() == ACTION_PLAYER_PLAY))
+    {
+      // handle the two cases, via NWClient or MW on-demand
+      CNWClient* client = CNWClient::GetClient();
+      if (client && client->AllowExit() && client->IsPlaying())
+        client->PlayPause();
+      else
+      {
+        if (g_application.GetAppPlayer().IsPaused())
+          CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_UNPAUSE);
+        else
+          CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_PAUSE_IF_PLAYING);
+      }
+    }
+
+    return true;
+  }
+
   switch (action.GetID())
   {
   case ACTION_SHOW_OSD:

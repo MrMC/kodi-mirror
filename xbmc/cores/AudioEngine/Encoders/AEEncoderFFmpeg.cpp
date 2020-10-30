@@ -267,6 +267,8 @@ int CAEEncoderFFmpeg::Encode(uint8_t *in, int in_size, uint8_t *out, int out_siz
   m_Pkt.size = out_size;
   m_Pkt.data = out;
 
+  // turn off ffmpeg deprecated warning spew
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   /* encode it */
   int ret = avcodec_encode_audio2(m_CodecCtx, &m_Pkt, frame, &got_output);
 

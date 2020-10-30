@@ -99,6 +99,7 @@ public:
   static void SettingOptionsCmsPrimariesFiller(std::shared_ptr<const CSetting> setting, std::vector<IntegerSettingOption> &list, int &current, void *data);
   static void SettingOptionsCmsGammaModesFiller(std::shared_ptr<const CSetting> setting, std::vector<IntegerSettingOption> &list, int &current, void *data);
 
+  static RESOLUTION GetResolutionFromString(const std::string &strResolution);
 
 protected:
   CDisplaySettings();
@@ -108,7 +109,6 @@ protected:
 
   DisplayMode GetCurrentDisplayMode() const;
 
-  static RESOLUTION GetResolutionFromString(const std::string &strResolution);
   static std::string GetStringFromResolution(RESOLUTION resolution, float refreshrate = 0.0f);
   static RESOLUTION GetResolutionForScreen();
 

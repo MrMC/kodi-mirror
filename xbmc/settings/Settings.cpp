@@ -443,6 +443,12 @@ const std::string CSettings::SETTING_SOURCE_VIDEOS = "source.videos";
 const std::string CSettings::SETTING_SOURCE_MUSIC = "source.music";
 const std::string CSettings::SETTING_SOURCE_PICTURES = "source.pictures";
 
+// NWMN settings strings
+const std::string CSettings::MN_URL = "mn.url_feed";
+const std::string CSettings::MN_MACHINE_ID = "mn.machine_id";
+const std::string CSettings::MN_LOCATION_ID = "mn.location_id";
+const std::string CSettings::MN_VERTICAL = "mn.vertical";
+
 bool CSettings::Initialize()
 {
   CSingleLock lock(m_critical);

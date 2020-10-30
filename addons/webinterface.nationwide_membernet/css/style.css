@@ -1,0 +1,28 @@
+body {
+}
+
+.content {
+    padding: 20px;
+    padding-top: 0px;
+} 
+
+#playlist .current td, #playlist .current th {
+	background: #117DA9;
+	color:#fff
+}
+#playlistContainer .item {cursor:pointer}
+#playlistContainer .item:hover td, #playlistContainer .item:hover th {background:#B3C6CE}
+
+@media only screen and (min-width: 980px), only screen and (min-width: 980px) {
+    .content {
+        padding-top: 150px;
+    }
+}
+
+iframe {
+  margin-top: 5px;
+  border-top: #008ae6 2px solid;
+  border-right: #008ae6 2px solid;
+  border-left: #008ae6 2px solid;
+  border-bottom: #008ae6 2px solid;
+}

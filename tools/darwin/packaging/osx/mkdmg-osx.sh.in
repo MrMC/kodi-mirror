@@ -33,7 +33,7 @@ if [ "$EXPANDED_CODE_SIGN_IDENTITY_NAME" ]; then
   codesign --verbose=4 --sign "$EXPANDED_CODE_SIGN_IDENTITY_NAME" --options runtime --timestamp --entitlements Kodi.entitlements "$APP"
 fi
 
-PACKAGE=org.xbmc.@APP_NAME_LC@-osx
+PACKAGE=@APP_NAME_LC@-osx
 
 VERSION=@APP_VERSION_MAJOR@.@APP_VERSION_MINOR@
 REVISION=0
@@ -42,7 +42,9 @@ if [ "@APP_VERSION_TAG_LC@" != "" ]; then
   REVISION=$REVISION~@APP_VERSION_TAG_LC@
 fi
 
-ARCHIVE=${PACKAGE}_${VERSION}-${REVISION}_macosx-intel-${ARCHITECTURE}
+now="$(date +'%d_%m_%Y_%H%M%S')"
+
+ARCHIVE=${PACKAGE}_${VERSION}-${REVISION}-${now}
 
 echo Creating $PACKAGE package version $VERSION revision $REVISION
 dmgPath="$DIRNAME/$ARCHIVE.dmg"

@@ -188,7 +188,7 @@ void CAnnouncementManager::DoAnnounce(AnnouncementFlag flag,
     if (data.isMember("player") && data["player"].isMember("playerid"))
       object["player"]["playerid"] = channel->IsRadio() ? PLAYLIST_MUSIC : PLAYLIST_VIDEO;
   }
-  else if (item->HasVideoInfoTag() && !item->HasPVRRecordingInfoTag())
+  else if (item->HasVideoInfoTag() && !item->HasPVRRecordingInfoTag() && !item->IsMembernet())
   {
     id = item->GetVideoInfoTag()->m_iDbId;
 

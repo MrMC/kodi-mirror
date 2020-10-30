@@ -798,6 +798,19 @@ bool CWinSystemOSX::CreateNewWindow(const std::string& name, bool fullScreen, RE
     // so we do not see it flash before the fade-out and switch to fullscreen.
     ShowHideNSWindow([view window], false);
   }
+  if (CDisplaySettings::GetInstance().GetCurrentResolution() == RES_WINDOW)
+   {
+     // It seems, that in macOS 10.15 this defaults to YES, but we currently do not support
+     // Retina resolutions properly. Ensure that the view created by SDL uses a 1 pixel per
+     // point framebuffer.
+     view.wantsBestResolutionOpenGLSurface = NO;
+   }
+   else
+   {
+     // If we are not starting up windowed, then hide the initial SDL window
+     // so we do not see it flash before the fade-out and switch to fullscreen.
+     ShowHideNSWindow([view window], false);
+   }
 
   // disassociate view from context
   [cur_context clearDrawable];
@@ -1020,6 +1033,8 @@ bool CWinSystemOSX::SetFullScreen(bool fullScreen, RESOLUTION_INFO& res, bool bl
     [windowedFullScreenwindow setContentSize:NSMakeSize(m_nWidth, m_nHeight)];
     [windowedFullScreenwindow update];
     [blankView setFrameSize:NSMakeSize(m_nWidth, m_nHeight)];
+
+    blankView.wantsBestResolutionOpenGLSurface = NO;
 
     // Obtain windowed pixel format and create a new context.
     newContext = CreateWindowedContext(cur_context);

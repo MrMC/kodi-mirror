@@ -143,6 +143,9 @@
 #include "games/dialogs/osd/DialogGameVideoRotation.h"
 #include "games/dialogs/osd/DialogGameVolume.h"
 
+#include "nwmn/CGUIWindowMN.h"
+#include "nwmn/CGUIWindowMNDemand.h"
+
 using namespace KODI;
 using namespace PVR;
 using namespace PERIPHERALS;
@@ -272,6 +275,31 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIDialogPVRRecordingSettings);
   Add(new CGUIDialogPVRClientPriorities);
   Add(new CGUIDialogPVRGuideControls);
+//  /* Load PVR related Windows and Dialogs */
+//  Add(new CGUIDialogTeletext);
+//  Add(new CGUIWindowPVRTVChannels);
+//  Add(new CGUIWindowPVRTVRecordings);
+//  Add(new CGUIWindowPVRTVGuide);
+//  Add(new CGUIWindowPVRTVTimers);
+//  Add(new CGUIWindowPVRTVTimerRules);
+//  Add(new CGUIWindowPVRTVSearch);
+//  Add(new CGUIWindowPVRRadioChannels);
+//  Add(new CGUIWindowPVRRadioRecordings);
+//  Add(new CGUIWindowPVRRadioGuide);
+//  Add(new CGUIWindowPVRRadioTimers);
+//  Add(new CGUIWindowPVRRadioTimerRules);
+//  Add(new CGUIWindowPVRRadioSearch);
+//  Add(new CGUIDialogPVRRadioRDSInfo);
+//  Add(new CGUIDialogPVRGuideInfo);
+//  Add(new CGUIDialogPVRRecordingInfo);
+//  Add(new CGUIDialogPVRTimerSettings);
+//  Add(new CGUIDialogPVRGroupManager);
+//  Add(new CGUIDialogPVRChannelManager);
+//  Add(new CGUIDialogPVRGuideSearch);
+//  Add(new CGUIDialogPVRChannelsOSD);
+//  Add(new CGUIDialogPVRChannelGuide);
+//  Add(new CGUIDialogPVRRecordingSettings);
+//  Add(new CGUIDialogPVRClientPriorities);
 
   Add(new CGUIDialogSelect);
   Add(new CGUIDialogMusicInfo);
@@ -290,15 +318,18 @@ void CGUIWindowManager::CreateWindows()
 
   Add(new CGUIWindowEventLog);
 
-  Add(new GAME::CGUIControllerWindow);
-  Add(new GAME::CGUIWindowGames);
-  Add(new GAME::CDialogGameOSD);
-  Add(new GAME::CDialogGameVideoFilter);
-  Add(new GAME::CDialogGameStretchMode);
-  Add(new GAME::CDialogGameVolume);
-  Add(new GAME::CDialogGameAdvancedSettings);
-  Add(new GAME::CDialogGameVideoRotation);
-  Add(new RETRO::CGameWindowFullScreen);
+//  Add(new GAME::CGUIControllerWindow);
+//  Add(new GAME::CGUIWindowGames);
+//  Add(new GAME::CDialogGameOSD);
+//  Add(new GAME::CDialogGameVideoFilter);
+//  Add(new GAME::CDialogGameStretchMode);
+//  Add(new GAME::CDialogGameVolume);
+//  Add(new GAME::CDialogGameAdvancedSettings);
+//  Add(new GAME::CDialogGameVideoRotation);
+//  Add(new RETRO::CGameWindowFullScreen);
+
+  Add(new CGUIWindowMN);
+  Add(new CGUIWindowMNDemand);
 }
 
 bool CGUIWindowManager::DestroyWindows()
@@ -354,6 +385,9 @@ bool CGUIWindowManager::DestroyWindows()
     DestroyWindow(WINDOW_DIALOG_SLIDER);
     DestroyWindow(WINDOW_DIALOG_MEDIA_FILTER);
     DestroyWindow(WINDOW_DIALOG_SUBTITLES);
+
+    DestroyWindow(WINDOW_MEMBERNET);
+    DestroyWindow(WINDOW_MEMBERNET_DEMAND);
 
     /* Delete PVR related windows and dialogs */
     DestroyWindow(WINDOW_TV_CHANNELS);

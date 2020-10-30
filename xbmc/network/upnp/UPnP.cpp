@@ -645,11 +645,11 @@ CUPnP::CreateServer(int port /* = 0 */)
                     CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::SETTING_SERVICES_WEBSERVERPORT),
                     "/").ToString();
 
-    device->m_ModelName        = "Kodi";
+    device->m_ModelName        = "MemberNetTV";
     device->m_ModelNumber      = CSysInfo::GetVersion().c_str();
-    device->m_ModelDescription = "Kodi - Media Server";
+  device->m_ModelDescription = "MemberNetTV - Media Server";
     device->m_ModelURL         = "http://kodi.tv/";
-    device->m_Manufacturer     = "XBMC Foundation";
+    device->m_Manufacturer     = "Nationwide";
     device->m_ManufacturerURL  = "http://kodi.tv/";
 
     device->SetDelegate(device);

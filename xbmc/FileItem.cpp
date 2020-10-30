@@ -851,6 +851,10 @@ bool CFileItem::IsPVRChannelGroup() const
 {
   return URIUtils::IsPVRChannelGroup(m_strPath);
 }
+bool CFileItem::IsMembernet() const
+{
+  return GetProperty("Membernet").asBoolean();
+}
 
 bool CFileItem::IsPVRRecording() const
 {

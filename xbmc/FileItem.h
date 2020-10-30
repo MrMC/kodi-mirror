@@ -248,6 +248,7 @@ public:
   bool IsPVR() const;
   bool IsLiveTV() const;
   bool IsRSS() const;
+  bool IsMembernet() const;
   bool IsAndroidApp() const;
 
   void RemoveExtension();

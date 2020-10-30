@@ -92,6 +92,8 @@
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
 #include "windowing/WindowSystemFactory.h"
+#include "nwmn/NWIoT.h"
+
 
 #ifdef HAS_UPNP
 #include "network/upnp/UPnP.h"
@@ -950,6 +952,10 @@ bool CApplication::Initialize()
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UI_READY);
     CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
+
+  // init IoT listener
+  CNWIoT *iot = new CNWIoT;
+  iot->Listen();
 
   return true;
 }
@@ -2932,7 +2938,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   {
     // the following code block is only applicable when bRestart is false OR to ISO stacks
 
-    if (item.IsVideo())
+    if (!item.IsMembernet() && item.IsVideo())
     {
       // open the d/b and retrieve the bookmarks for the current movie
       CVideoDatabase dbs;

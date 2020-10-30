@@ -391,6 +391,7 @@ void CSettingsComponent::CreateUserDirs() const
   XFILE::CDirectory::Create("special://home/addons/temp");
   XFILE::CDirectory::Create("special://home/media");
   XFILE::CDirectory::Create("special://home/system");
+  XFILE::CDirectory::Create("special://home/nwmn");
   XFILE::CDirectory::Create("special://masterprofile/");
   XFILE::CDirectory::Create("special://temp/");
   XFILE::CDirectory::Create("special://logpath");

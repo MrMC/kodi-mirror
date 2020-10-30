@@ -32,6 +32,9 @@ void CSaveFileState::DoWork(CFileItem& item,
                             CBookmark& bookmark,
                             bool updatePlayCount)
 {
+  // if its membernet item, skip database update for it also
+  if (item.IsMembernet())
+    return;
   std::string progressTrackingFile = item.GetPath();
 
   if (item.HasVideoInfoTag() && StringUtils::StartsWith(item.GetVideoInfoTag()->m_strFileNameAndPath, "removable://"))

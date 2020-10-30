@@ -185,7 +185,8 @@ std::string CSpecialProtocol::TranslatePath(const CURL &url)
            RootDir == "profile" ||
            RootDir == "masterprofile" ||
            RootDir == "frameworks" ||
-           RootDir == "logpath")
+           RootDir == "logpath" ||
+           RootDir == "nwmn")
   {
     std::string basePath = GetPath(RootDir);
     if (!basePath.empty())
@@ -283,6 +284,11 @@ void CSpecialProtocol::LogPaths()
   //CLog::Log(LOGINFO, "special://userhome/ is mapped to: %s", GetPath("userhome").c_str());
   if (!CUtil::GetFrameworksPath().empty())
     CLog::Log(LOGINFO, "special://frameworks/ is mapped to: %s", GetPath("frameworks").c_str());
+}
+
+void CSpecialProtocol::SetCustomPath(const std::string &name, const std::string &dir)
+{
+    SetPath(name, dir);
 }
 
 // private routines, to ensure we only set/get an appropriate path
