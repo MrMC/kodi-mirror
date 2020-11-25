@@ -20,6 +20,7 @@
 #include "system.h"
 
 #include "NWIoT.h"
+#include "NWClient.h"
 
 #include "Application.h"
 #include "network/Network.h"
@@ -36,7 +37,7 @@
 //#include "guilib/GUIWindowManager.h"
 #include "interfaces/AnnouncementManager.h"
 //#include "network/Network.h"
-//#include "settings/Settings.h"
+#include "settings/Settings.h"
 //#include "utils/FileUtils.h"
 #include "utils/log.h"
 //#include "utils/TimeUtils.h"
@@ -232,14 +233,70 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
 
 void CNWIoT::MsgReceived(CVariant msgPayload)
 {
+
+  /*
+  {
+   "message": {
+      "details": {
+        "orientation": "vertical",
+        "reportState": "true",
+        "reportStats": "true"
+      },
+      "machineId": "98:01:A7:90:8C:BF",
+      "type": "machineAction"
+     }
+  }
+  */
   if (msgPayload.isMember("message"))
   {
-    CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, "AWS IoT", msgPayload["message"].asString(), 3000, false);
     CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - %s", msgPayload["message"].asString());
+    std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    if (msgPayload["message"]["type"].asString() == "machineAction" && msgPayload["message"]["machineId"] == uuid)
+    {
+      CVariant msgDetails = msgPayload["message"]["details"];
+      if (!msgDetails.isNull())
+      {
+        if (msgDetails.isMember("orientation"))
+        {
+          if (msgDetails["orientation"].asString() == "vertical")
+            CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, true);
+          else
+            CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, false);
+          CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
+        }
+        if (msgDetails.isMember("reportState"))
+        {
+          // here we send back the machine state...
+        }
+        if (msgDetails.isMember("reportStats"))
+        {
+          if (msgDetails["reportStats"].asBoolean())
+          {
+            CNWClient* client = CNWClient::GetClient();
+            NWPlayerInfo playerInfo;
+            client->GetPlayerInfo(playerInfo);
+            std::string payload;
+            payload = playerInfo.macaddress + "\n";
+            payload += playerInfo.serial_number + "\n";
+            CVariant payloadObject;
+            std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+            payloadObject["machineId"] = uuid;
+            payloadObject["type"] = "reportStats";
+            payloadObject["details"] = payload;
+            CDateTime time = CDateTime::GetCurrentDateTime();
+            payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+  //          payloadObject["details"]["assetId"] = assetID;
+            payloadObject["details"]["raw"] = payload;
+            std::string payloadStr;
+            CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+            CNWIoT::setPayload(payloadStr);
+          }
+        }
+      }
+    }
   }
   else
     CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Did not have 'message' json object");
-
 }
 
 bool CNWIoT::DoAuthorize()
