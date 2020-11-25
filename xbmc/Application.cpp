@@ -92,7 +92,7 @@
 #include "utils/log.h"
 #include "windowing/WinSystem.h"
 #include "windowing/WindowSystemFactory.h"
-#include "nwmn/NWIoT.h"
+
 
 
 #ifdef HAS_UPNP
@@ -953,9 +953,9 @@ bool CApplication::Initialize()
     CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
 
-  // init IoT listener
-  CNWIoT *iot = new CNWIoT;
-  iot->Listen();
+//  // init IoT listener
+//  CNWIoT *iot = new CNWIoT;
+//  iot->Listen();
 
   return true;
 }

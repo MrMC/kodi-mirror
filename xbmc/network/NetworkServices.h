@@ -50,6 +50,8 @@ public:
   bool IsAirTunesServerRunning();
   bool StopAirTunesServer(bool bWait);
 
+  bool StartIoT();
+
   bool StartJSONRPCServer();
   bool IsJSONRPCServerRunning();
   bool StopJSONRPCServer(bool bWait);

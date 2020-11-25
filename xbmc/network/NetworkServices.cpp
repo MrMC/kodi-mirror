@@ -68,6 +68,8 @@
 #include "platform/darwin/osx/XBMCHelper.h"
 #endif
 
+#include "nwmn/NWIoT.h"
+
 using namespace KODI::MESSAGING;
 using namespace JSONRPC;
 using namespace EVENTSERVER;
@@ -556,6 +558,7 @@ void CNetworkServices::Start()
   StartAirTunesServer();
   StartAirPlayServer();
   StartRss();
+  StartIoT();
 }
 
 void CNetworkServices::Stop(bool bWait)
@@ -769,6 +772,14 @@ bool CNetworkServices::StopAirTunesServer(bool bWait)
   return false;
 }
 
+bool CNetworkServices::StartIoT()
+{
+  // init IoT listener
+  CNWIoT *iot = new CNWIoT;
+  iot->Listen();
+  return true;
+}
+
 bool CNetworkServices::StartJSONRPCServer()
 {
   if (!m_settings->GetBool(CSettings::SETTING_SERVICES_ESENABLED))
@@ -791,6 +802,7 @@ bool CNetworkServices::StartJSONRPCServer()
 
   return true;
 }
+
 
 bool CNetworkServices::IsJSONRPCServerRunning()
 {

@@ -592,7 +592,7 @@ void CNWIoT::Process()
   CLog::Log(LOGDEBUG, "**NW** - CNWIoT::Process Started");
   #endif
   ApiHandle apiHandle;
-  apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
+  apiHandle.InitializeLogging(Aws::Crt::LogLevel::Fatal, stderr);
 
   String topic = "TestTopic";
   String clientId(Aws::Crt::UUID().ToString());
@@ -711,18 +711,17 @@ void CNWIoT::Process()
   connection->OnConnectionResumed = std::move(onResumed);
 
 
-  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Connecting...");
-
-
   while (!m_bStop && !connected)
   {
-    if (!connection->Connect(clientId.c_str(), false, 4000))
+    CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Connecting...");
+    if (!connection->Connect(clientId.c_str(), false, 1000))
     {
       CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - MQTT Connection failed with error %s", ErrorDebugString(connection->LastError()));
-      Sleep(1000);
+
     }
     else
       connected = true;
+    Sleep(1000);
   }
 
   if (connectionCompletedPromise.get_future().get())
