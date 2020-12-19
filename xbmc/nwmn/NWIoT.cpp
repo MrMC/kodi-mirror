@@ -24,12 +24,12 @@
 
 #include "Application.h"
 #include "network/Network.h"
-//#include "messaging/ApplicationMessenger.h"
+#include "messaging/ApplicationMessenger.h"
 #include "Util.h"
 #include "ServiceBroker.h"
 //#include "guilib/GUIComponent.h"
 //#include "URL.h"
-//#include "dialogs/GUIDialogKaiToast.h"
+#include "dialogs/GUIDialogKaiToast.h"
 //#include "filesystem/Directory.h"
 #include "filesystem/File.h"
 #include "filesystem/CurlFile.h"
@@ -247,13 +247,12 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
      }
   }
   */
-  if (msgPayload.isMember("message"))
+  if (!msgPayload.isNull())
   {
-    CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - %s", msgPayload["message"].asString());
     std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-    if (msgPayload["message"]["type"].asString() == "machineAction" && msgPayload["message"]["machineId"] == uuid)
+    if (msgPayload["type"].asString() == "machineAction" && msgPayload["machineId"] == uuid)
     {
-      CVariant msgDetails = msgPayload["message"]["details"];
+      CVariant msgDetails = msgPayload["details"];
       if (!msgDetails.isNull())
       {
         if (msgDetails.isMember("orientation"))
@@ -268,30 +267,62 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
         {
           // here we send back the machine state...
         }
-        if (msgDetails.isMember("reportStats"))
+        if (msgDetails.isMember("reportStats") && msgDetails["reportStats"].asBoolean())
         {
-          if (msgDetails["reportStats"].asBoolean())
+          CNWClient* client = CNWClient::GetClient();
+          NWPlayerInfo playerInfo;
+          client->GetPlayerInfo(playerInfo);
+          std::string payload;
+          payload = playerInfo.macaddress + "\n";
+          payload += playerInfo.serial_number + "\n";
+          CVariant payloadObject;
+          std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+          payloadObject["machineId"] = uuid;
+          payloadObject["type"] = "reportStats";
+          payloadObject["details"] = payload;
+          CDateTime time = CDateTime::GetCurrentDateTime();
+          payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+//          payloadObject["details"]["assetId"] = assetID;
+          payloadObject["details"]["raw"] = payload;
+          std::string payloadStr;
+          CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+          CNWIoT::setPayload(payloadStr);
+        }
+        if (msgDetails.isMember("startPlayback") && msgDetails["startPlayback"].asBoolean())
+        {
+          // start playback
+          CNWClient* client = CNWClient::GetClient();
+          if (client->IsAuthorized())
           {
-            CNWClient* client = CNWClient::GetClient();
-            NWPlayerInfo playerInfo;
-            client->GetPlayerInfo(playerInfo);
-            std::string payload;
-            payload = playerInfo.macaddress + "\n";
-            payload += playerInfo.serial_number + "\n";
-            CVariant payloadObject;
-            std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-            payloadObject["machineId"] = uuid;
-            payloadObject["type"] = "reportStats";
-            payloadObject["details"] = payload;
-            CDateTime time = CDateTime::GetCurrentDateTime();
-            payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
-  //          payloadObject["details"]["assetId"] = assetID;
-            payloadObject["details"]["raw"] = payload;
-            std::string payloadStr;
-            CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-            CNWIoT::setPayload(payloadStr);
+            client->Startup(false, false);
           }
         }
+        if (msgDetails.isMember("stopPlayback") && msgDetails["stopPlayback"].asBoolean())
+        {
+          // Stop Playback
+          CNWClient* client = CNWClient::GetClient();
+          if (client->IsAuthorized())
+          {
+            client->StopPlaying();
+          }
+        }
+        if (msgDetails.isMember("notify"))
+        {
+          // Send toast msg
+          CGUIDialogKaiToast::QueueNotification("Message from the backend", msgDetails["notify"].asString());
+        }
+        if (msgDetails.isMember("quit") && msgDetails["quit"].asBoolean())
+        {
+          // quit the app
+          KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
+        }
+        if (msgDetails.isMember("reboot") && msgDetails["reboot"].asBoolean())
+        {
+          // reboot the machine
+          // disabked for testing on OSX
+          // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+        }
+
       }
     }
   }
