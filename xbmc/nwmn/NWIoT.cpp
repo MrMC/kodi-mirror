@@ -151,15 +151,9 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
       );
       // { machineId: ‘’, eventType: ‘’, details: { } }
       CVariant payloadObject;
-      std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-      payloadObject["machineId"] = uuid;
-      payloadObject["type"] = "playbackStart";
-      payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
       payloadObject["details"]["assetId"] = assetID;
       payloadObject["details"]["raw"] = payload;
-      std::string payloadStr;
-      CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-      CNWIoT::setPayload(payloadStr);
+      notifyEvent("playbackStart", payloadObject);
     }
     else if (message == "OnStop")
     {
@@ -188,15 +182,9 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         }
         */
         CVariant payloadObject;
-        std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-        payloadObject["machineId"] = uuid;
-        payloadObject["type"] = "playbackStop";
-        payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
         payloadObject["details"]["assetId"] = assetID;
         payloadObject["details"]["raw"] = payload;
-        std::string payloadStr;
-        CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-        CNWIoT::setPayload(payloadStr);
+        notifyEvent("playbackStop", payloadObject);
       }
     }
     else if (message == "MNmsg")
@@ -214,19 +202,23 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         {
           // { machineId: ‘’, eventType: ‘’, details: { } }
           CVariant payloadObject;
-          std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-          payloadObject["machineId"] = uuid;
-          payloadObject["type"] = "about";
           payloadObject["details"] = data["payload"].asString();
-          CDateTime time = CDateTime::GetCurrentDateTime();
-          payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
-//          payloadObject["details"]["assetId"] = assetID;
           payloadObject["details"]["raw"] = data["payload"].asString();
-          std::string payloadStr;
-          CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-          CNWIoT::setPayload(payloadStr);
+          notifyEvent("about", payloadObject);
         }
       }
+    }
+    else if (message == "MNgotPlaylist")
+    {
+      CVariant payloadObject;
+      payloadObject["details"] = "";
+      notifyEvent("playlistReceived", payloadObject);
+    }
+    else if (message == "MNassetDownloaded")
+    {
+      CVariant payloadObject;
+      payloadObject["details"]["assetID"] = data["assetID"].asString();
+      notifyEvent("assetDownloaded", payloadObject);
     }
   }
 }
@@ -276,17 +268,9 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
           payload = playerInfo.macaddress + "\n";
           payload += playerInfo.serial_number + "\n";
           CVariant payloadObject;
-          std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-          payloadObject["machineId"] = uuid;
-          payloadObject["type"] = "reportStats";
           payloadObject["details"] = payload;
-          CDateTime time = CDateTime::GetCurrentDateTime();
-          payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
-//          payloadObject["details"]["assetId"] = assetID;
           payloadObject["details"]["raw"] = payload;
-          std::string payloadStr;
-          CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-          CNWIoT::setPayload(payloadStr);
+          notifyEvent("reportStats", payloadObject);
         }
         if (msgDetails.isMember("startPlayback") && msgDetails["startPlayback"].asBoolean())
         {
@@ -710,6 +694,9 @@ void CNWIoT::Process()
             CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Connection completed successfully.");
             connectionCompletedPromise.set_value(true);
             connected = true;
+            CVariant payloadObject;
+            payloadObject["details"] = "";
+            notifyEvent("deviceConnected", payloadObject);
           }
       }
   };
@@ -895,4 +882,18 @@ void CNWIoT::setPayload(std::string payload)
 {
   CSingleLock lock(m_payloadLock);
   m_payload = payload;
+}
+
+void CNWIoT::notifyEvent(std::string type, CVariant details)
+{
+  CVariant payloadObject;
+  CDateTime time = CDateTime::GetCurrentDateTime();
+  std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  payloadObject["machineId"] = uuid;
+  payloadObject["type"] = type;
+  payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+  payloadObject["details"] = details["details"];
+  std::string payloadStr;
+  CJSONVariantWriter::Write(payloadObject, payloadStr, false);
+  CNWIoT::setPayload(payloadStr);
 }

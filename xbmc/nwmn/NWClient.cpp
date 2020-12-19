@@ -575,6 +575,12 @@ bool CNWClient::GetProgamInfo()
   }
   m_totalAssets = total_assets;
 
+  if (total_assets > 0)
+  {
+    CVariant data;
+    CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNgotPlaylist", data);
+  }
+
   rtn = true;
   return rtn;
 

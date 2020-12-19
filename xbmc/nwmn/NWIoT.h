@@ -49,6 +49,7 @@ public:
   bool   IsAuthorized();
   void   Listen();
   void   setPayload(std::string payload = "");
+  void   notifyEvent(std::string type, CVariant details);
 
 protected:
   void Process() override;

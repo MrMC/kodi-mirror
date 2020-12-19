@@ -25,6 +25,8 @@
 #include "filesystem/File.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
+#include "interfaces/AnnouncementManager.h"
+#include "ServiceBroker.h"
 
 CNWMediaManager::CNWMediaManager()
  : CThread("CNWMediaManager")
@@ -225,6 +227,9 @@ void CNWMediaManager::Process()
       unsigned int size = asset.video_size;
       if (size && m_http.Download(asset.video_url, asset.video_localpath, &size))
       {
+        CVariant data;
+        data["assetID"] = asset.id;
+        CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNassetDownloaded", data);
         // verify download by md5 check
         //if (StringUtils::EqualsNoCase(asset.video_md5, CUtil::GetFileMD5(asset.video_localpath)))
         struct __stat64 st;
