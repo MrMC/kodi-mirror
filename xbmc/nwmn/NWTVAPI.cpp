@@ -187,7 +187,7 @@ bool TVAPI_GetMachine(TVAPI_Machine &machine)
     machine.location.state        = location["state"].asString();
     machine.location.phone        = location["phone"].asString();
     machine.location.fax          = location["fax"].asString();
-    
+
     CVariant network              = reply["network"];
     machine.network.macaddress    = network["macaddress"].asString();
     machine.network.macaddress_wireless = network["macaddress_wireless"].asString();
@@ -348,7 +348,7 @@ bool TVAPI_GetPlaylists(TVAPI_Playlists &playlists)
       // if we get here, we are done
       break;
     }
-    
+
     return true;
   }
 
@@ -416,32 +416,21 @@ bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id)
   return false;
 }
 
-bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, NWPlayerInfo playerInfo)
+bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string playlist_id)
 {
   XFILE::CCurlFile curlfile;
   curlfile.SetTimeout(10);
-  //https://content-screening-api.dev.envoi.cloud/assets?appname=membernettv&token=55de81c277222d21621cb75aa1b14eccea19d7e285fb8c3421fb0325cbd82b36cd0fc391c1dfcf1e82d9743aba1094c7ac11a6b4463fe025ecaeace74772da24eb1f2e98a5b88dfafebee5dbf2a8590fdc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2&assetcount=12&pageNumber=1
-  std::string urlBase = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/manageEncoders";
-//  std::string urlBasePL = "https://content-screening-api.dev.envoi.cloud/playlistinfo";
-  std::string token = "55de82c571202c21601dbd58a3b745c8e619d5e585fb8c3422fc0527cad82937c70dc197cadbc31e80de743aba1094c7ac11a6b4463fe025ecaeace74766d824e9192e98a5b88dfafeb0e5defda85800dc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2";
-  CURL curl(urlBase);
+
+  CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id + "/files");
   curl.SetProtocolOption("seekable", "0");
-//  curl.SetProtocolOption("auth", "basic");
+  curl.SetProtocolOption("auth", "basic");
   curl.SetProtocolOption("Cache-Control", "no-cache");
   curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetOption("appname", "membernet");
-//  curl.SetOption("assetcount", "12");
-//  curl.SetOption("pageNumber", "1");
-  curl.SetOption("activity", "fetch");
-  curl.SetOption("devicetype", "player");
-  curl.SetOption("playBackUrls", "true");
-  curl.SetOption("ethernetMACaddress", playerInfo.macaddress);
-  curl.SetOption("token", token);
-//  curl.SetUserName(playlistItems.apiKey);
-//  curl.SetPassword(playlistItems.apiSecret);
+  curl.SetUserName(playlistItems.apiKey);
+  curl.SetPassword(playlistItems.apiSecret);
   std::string strResponse;
-  std::string testURL = curl.Get();
-  if (curlfile.Post(curl.Get(), "",strResponse))
+
+  if (curlfile.Get(curl.Get(), strResponse))
   {
     #if ENABLE_TVAPI_DEBUGLOGS
     CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
@@ -456,122 +445,94 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, NWPlayerInfo pla
     playlistItems.type = playlist["type"].asString();
 
     CVariant results(CVariant::VariantTypeArray);
-    results = reply["result"]["data"][0];
-
-
-    CVariant playlistUrls = results["playlistUrls"];
-    std::string strResponsePL;
-    for (size_t i = 0; i < playlistUrls.size(); i++)
+    results = reply["results"];
+    for (size_t i = 0; i < results.size(); ++i)
     {
+      CVariant result = results[i];
+
       TVAPI_PlaylistItem item;
-      item.id = playlistUrls[i]["assetid"].asString();
-//      item.name = playlistUrls[i]["assetname"].asString();
-  //      item.tv_category_id = result["tv_category_id"].asString();
-  //      item.description = result["description"].asString();
-  //      item.created_date = result["created_date"].asString();
-  //      item.updated_date = result["updated_date"].asString();
-  //      item.completion_date = result["completion_date"].asString();
-  //      item.theatricalrelease = result["theatricalrelease"].asString();
-  //      item.dvdrelease = result["dvdrelease"].asString();
-  //      item.download = result["download"].asString();
-  //      CVariant availability = result["availability"];
-  //      item.availability_to = availability["to"].asString();
-  //      item.availability_from = availability["from"].asString();
+      item.id = result["id"].asString();
+      item.name = result["name"].asString();
+      item.tv_category_id = result["tv_category_id"].asString();
+      item.description = result["description"].asString();
+      item.created_date = result["created_date"].asString();
+      item.updated_date = result["updated_date"].asString();
+      item.completion_date = result["completion_date"].asString();
+      item.theatricalrelease = result["theatricalrelease"].asString();
+      item.dvdrelease = result["dvdrelease"].asString();
+      item.download = result["download"].asString();
+      CVariant availability = result["availability"];
+      item.availability_to = availability["to"].asString();
+      item.availability_from = availability["from"].asString();
 
-//      item.thumb.path = result["landscape_logo_image"].asString();
-//      item.poster.path = result["portrait_logo_image"].asString();
-
-
-      TVAPI_PlaylistFile file;
-  //      file.type = it->first;
-      file.path = playlistUrls[i]["Mp4_proxy_URL"].asString();
-      CURL curlFile(file.path);
-      std::string strResponse;
-      struct __stat64 statBuffer;
-      XFILE::CCurlFile curlfile;
-      if (curlfile.Stat(curlFile, &statBuffer) == 0)
+      CVariant files = result["files"];
+      if (files.isObject())
       {
-        long size = statBuffer.st_size;
-        file.size = StringUtils::Format("%d",size);
+        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+        {
+          CVariant fileobj = it->second;
+          if (fileobj.isObject())
+          {
+            if (it->first == "720" || it->first == "1080" || it->first == "4K")
+            {
+              TVAPI_PlaylistFile file;
+              file.type = it->first;
+              file.path = fileobj["path"].asString();
+              file.size = fileobj["size"].asString();
+              file.width = fileobj["width"].asString();
+              file.height = fileobj["height"].asString();
+              file.etag = fileobj["etag"].asString();
+              file.mime_type = fileobj["mime_type"].asString();
+              file.created_date = fileobj["created_date"].asString();
+              file.updated_date = fileobj["updated_date"].asString();
+              item.files.push_back(file);
+            }
+          }
+        }
+        // sort from low rez to high rez
+        std::sort(item.files.begin(), item.files.end(),
+          [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
+          {
+            return std_stoi(a.type) < std_stoi(b.type);
+          });
+
+        // now find the 'thumb'
+        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+        {
+          CVariant fileobj = it->second;
+          if (fileobj.isObject() && it->first == "thumb")
+          {
+            item.thumb.type = it->first;
+            item.thumb.path = fileobj["path"].asString();
+            item.thumb.size = fileobj["size"].asString();
+            item.thumb.width = fileobj["width"].asString();
+            item.thumb.height = fileobj["height"].asString();
+            item.thumb.etag = fileobj["etag"].asString();
+            item.thumb.mime_type = fileobj["mime_type"].asString();
+            item.thumb.created_date = fileobj["created_date"].asString();
+            item.thumb.updated_date = fileobj["updated_date"].asString();
+          }
+        }
+
+        // and find the 'poster'
+        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+        {
+          CVariant fileobj = it->second;
+          if (fileobj.isObject() && it->first == "thumb")
+          {
+            item.poster.type = it->first;
+            item.poster.path = fileobj["path"].asString();
+            item.poster.size = fileobj["size"].asString();
+            item.poster.width = fileobj["width"].asString();
+            item.poster.height = fileobj["height"].asString();
+            item.poster.etag = fileobj["etag"].asString();
+            item.poster.mime_type = fileobj["mime_type"].asString();
+            item.poster.created_date = fileobj["created_date"].asString();
+            item.poster.updated_date = fileobj["updated_date"].asString();
+          }
+        }
+
       }
-    // this might need to be changed, we assume it will be "size"
-    // but we never know what envoi will come up with
-  //        file.size = videoItem["fileSize"].asString();
-  //      file.width = fileobj["width"].asString();
-  //      file.height = fileobj["height"].asString();
-  //      file.etag = fileobj["etag"].asString();
-  //      file.mime_type = fileobj["mime_type"].asString();
-  //      file.created_date = fileobj["created_date"].asString();
-  //      file.updated_date = fileobj["updated_date"].asString();
-      item.files.push_back(file);
-  //      if (files.isObject())
-  //      {
-  //        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-  //        {
-  //          CVariant fileobj = it->second;
-  //          if (fileobj.isObject())
-  //          {
-  //            if (it->first == "720" || it->first == "1080" || it->first == "4K")
-  //            {
-  //              TVAPI_PlaylistFile file;
-  //              file.type = it->first;
-  //              file.path = fileobj["path"].asString();
-  //              file.size = fileobj["size"].asString();
-  //              file.width = fileobj["width"].asString();
-  //              file.height = fileobj["height"].asString();
-  //              file.etag = fileobj["etag"].asString();
-  //              file.mime_type = fileobj["mime_type"].asString();
-  //              file.created_date = fileobj["created_date"].asString();
-  //              file.updated_date = fileobj["updated_date"].asString();
-  //              item.files.push_back(file);
-  //            }
-  //          }
-  //        }
-  //        // sort from low rez to high rez
-  //        std::sort(item.files.begin(), item.files.end(),
-  //          [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
-  //          {
-  //            return std_stoi(a.type) < std_stoi(b.type);
-  //          });
-  //
-  //        // now find the 'thumb'
-  //        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-  //        {
-  //          CVariant fileobj = it->second;
-  //          if (fileobj.isObject() && it->first == "thumb")
-  //          {
-  //            item.thumb.type = it->first;
-  //            item.thumb.path = fileobj["path"].asString();
-  //            item.thumb.size = fileobj["size"].asString();
-  //            item.thumb.width = fileobj["width"].asString();
-  //            item.thumb.height = fileobj["height"].asString();
-  //            item.thumb.etag = fileobj["etag"].asString();
-  //            item.thumb.mime_type = fileobj["mime_type"].asString();
-  //            item.thumb.created_date = fileobj["created_date"].asString();
-  //            item.thumb.updated_date = fileobj["updated_date"].asString();
-  //          }
-  //        }
-  //
-  //        // and find the 'poster'
-  //        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-  //        {
-  //          CVariant fileobj = it->second;
-  //          if (fileobj.isObject() && it->first == "thumb")
-  //          {
-  //            item.poster.type = it->first;
-  //            item.poster.path = fileobj["path"].asString();
-  //            item.poster.size = fileobj["size"].asString();
-  //            item.poster.width = fileobj["width"].asString();
-  //            item.poster.height = fileobj["height"].asString();
-  //            item.poster.etag = fileobj["etag"].asString();
-  //            item.poster.mime_type = fileobj["mime_type"].asString();
-  //            item.poster.created_date = fileobj["created_date"].asString();
-  //            item.poster.updated_date = fileobj["updated_date"].asString();
-  //          }
-  //        }
-
-  //      }
-
       playlistItems.items.push_back(item);
     }
 
@@ -642,7 +603,7 @@ bool TVAPI_ReportFilesPlayed(TVAPI_Files &files, std::string serial_number)
       CLog::Log(LOGDEBUG, "TVAPI_ReportFilesPlayed %s", strResponse.c_str());
     return true;
   }
-  
+
   return false;
 }
 
@@ -675,7 +636,7 @@ bool TVAPI_ReportFilesDeleted(TVAPI_Files &files)
       CLog::Log(LOGDEBUG, "TVAPI_ReportFilesDeleted %s", strResponse.c_str());
     return true;
   }
- 
+
   return false;
 }
 
@@ -708,7 +669,7 @@ bool TVAPI_ReportFilesDownloaded(TVAPI_Files &files)
       CLog::Log(LOGDEBUG, "TVAPI_ReportFilesDownloaded %s", strResponse.c_str());
     return true;
   }
-  
+
   return false;
 }
 

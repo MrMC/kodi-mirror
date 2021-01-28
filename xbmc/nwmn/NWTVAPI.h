@@ -23,7 +23,6 @@
 #include "vector"
 
 #include "XBDateTime.h"
-#include "NWClientUtilities.h"
 
 // https://www.nationwidemember.com/tv-api-doc/
 
@@ -340,7 +339,7 @@ bool TVAPI_UpdateMachineInfo(TVAPI_MachineUpdate &machineUpdate);
 // playlists
 bool TVAPI_GetPlaylists(TVAPI_Playlists &playlists);
 bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id);
-bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, NWPlayerInfo playerInfo);
+bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string playlist_id);
 
 // reports
 bool TVAPI_ReportHealth(TVAPI_HealthReport &health);

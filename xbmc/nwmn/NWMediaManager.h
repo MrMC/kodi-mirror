@@ -41,7 +41,7 @@ public:
   void          ClearDownloads();
   size_t        GetDownloadCount();
   bool          GetLocalAsset(size_t index, NWAsset &asset);
-  bool          GetLocalAsset(std::string asset_id, NWAsset &asset);
+  bool          GetLocalAsset(int asset_id, NWAsset &asset);
   size_t        GetLocalAssetCount();
   void          UpdateNetworkStatus(bool hasNetwork);
   void          QueueAssetsForDownload(std::vector<NWAsset> &assets);

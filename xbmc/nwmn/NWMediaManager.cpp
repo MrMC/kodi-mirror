@@ -25,8 +25,6 @@
 #include "filesystem/File.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
-#include "interfaces/AnnouncementManager.h"
-#include "ServiceBroker.h"
 
 CNWMediaManager::CNWMediaManager()
  : CThread("CNWMediaManager")
@@ -94,7 +92,7 @@ bool CNWMediaManager::GetLocalAsset(size_t index, struct NWAsset &asset)
   return rtn;
 }
 
-bool CNWMediaManager::GetLocalAsset(std::string asset_id, NWAsset &asset)
+bool CNWMediaManager::GetLocalAsset(int asset_id, NWAsset &asset)
 {
   bool rtn = false;
   for (size_t index = 0; index < m_assets.size(); index++)
@@ -186,9 +184,8 @@ void CNWMediaManager::Process()
   CLog::Log(LOGDEBUG, "**NW** - CNWMediaManager::Process Started");
   #endif
 
-  m_http.SetBufferSize(32768 * 10);
-//  m_http.SetTimeout(5);
-  m_http.SetRequestHeader("seekable", "1");
+  //m_http.SetBufferSize(32768 * 10);
+  m_http.SetTimeout(5);
 
   while (!m_bStop)
   {
@@ -227,20 +224,15 @@ void CNWMediaManager::Process()
       unsigned int size = asset.video_size;
       if (size && m_http.Download(asset.video_url, asset.video_localpath, &size))
       {
-        CVariant data;
-        data["assetID"] = asset.id;
-        CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNassetDownloaded", data);
         // verify download by md5 check
         //if (StringUtils::EqualsNoCase(asset.video_md5, CUtil::GetFileMD5(asset.video_localpath)))
         struct __stat64 st;
         if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1 && st.st_size == asset.video_size)
         {
-//        if (XFILE::CFile::Stat(asset.video_localpath, &st) != -1)
-//        {
           // quick grab of thumbnail with no error checking.
           if (!XFILE::CFile::Exists(asset.thumb_localpath))
           {
-            size = NULL;
+            size = asset.thumb_size;
             m_http.Download(asset.thumb_url, asset.thumb_localpath, &size);
           }
 
@@ -271,7 +263,7 @@ void CNWMediaManager::Process()
             // erase front after we re-queue
             m_download.erase(m_download.begin());
           }
-        }
+       }
       }
       else
       {

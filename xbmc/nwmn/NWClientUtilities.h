@@ -69,7 +69,7 @@ typedef struct NWPlayerInfo {
 
 // ---------------------------------------------
 typedef struct NWAsset {
-  std::string id;
+  int id;
   int group_id;
   std::string name;
   std::string type;

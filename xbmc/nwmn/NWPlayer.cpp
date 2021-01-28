@@ -226,7 +226,7 @@ void CNWPlayer::Process()
             if (asset.valid)
             {
               #if ENABLE_NWPLAYER_DEBUGLOGS
-              CLog::Log(LOGDEBUG, "**NW** - CNWPlayer::queue group(%d), asset(%s)", group->id, asset.id);
+              CLog::Log(LOGDEBUG, "**NW** - CNWPlayer::queue group(%d), asset(%d)", group->id, asset.id);
               #endif
 
               CFileItemPtr item(new CFileItem());

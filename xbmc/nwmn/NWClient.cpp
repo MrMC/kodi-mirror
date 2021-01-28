@@ -389,8 +389,8 @@ void CNWClient::Process()
       CLog::Log(LOGDEBUG, "**NW** - (process) new m_NextUpdateTime = %s", m_NextUpdateTime.GetAsDBDateTime().c_str());
 
       UpdateNetworkStatus();
-      //if (m_HasNetwork)
-      //  AddJob(new CNWClientJob(this, "GetActions"));
+      if (m_HasNetwork)
+        AddJob(new CNWClientJob(this, "GetActions"));
 
       GetPlayerInfo();
       if (GetProgamInfo())
@@ -543,177 +543,136 @@ bool CNWClient::GetProgamInfo()
 {
   bool rtn = false;
 
-  // hack for Envoi below
-
-  CLog::Log(LOGDEBUG, "**NW Envoi** - CNWClient::GetProgamInfo fetching update");
-
-  TVAPI_Playlist playlist;
-  playlist.apiKey = m_PlayerInfo.apiKey;
-  playlist.apiSecret = m_PlayerInfo.apiSecret;
-  TVAPI_GetPlaylist(playlist, m_PlayerInfo.playlist_id);
-
-  TVAPI_PlaylistItems playlistItems;
-  playlistItems.apiKey = m_PlayerInfo.apiKey;
-  playlistItems.apiSecret = m_PlayerInfo.apiSecret;
-  TVAPI_GetPlaylistItems(playlistItems, m_PlayerInfo);
-
-  m_ProgramInfo.video_format = m_PlayerInfo.video_format;
-  CreatePlaylist(m_strHome, m_ProgramInfo, playlist, playlistItems);
-  //SaveLocalPlaylist(m_strHome, m_ProgramInfo);
-
-  // queue all assets belonging to this playlist
-  m_Player->QueueProgramInfo(m_ProgramInfo);
-  int total_assets = 0;
-  m_MediaManager->ClearAssets();
-  for (auto group : m_ProgramInfo.groups)
+  if (m_HasNetwork && m_StartupState != ClientTryUseExistingPlayer)
   {
-    if (!group.assets.empty())
+    TVAPI_Playlist playlist;
+    playlist.apiKey = m_PlayerInfo.apiKey;
+    playlist.apiSecret = m_PlayerInfo.apiSecret;
+    TVAPI_GetPlaylist(playlist, m_PlayerInfo.playlist_id);
+
+    bool updateProgram = false;
+    // if the fetched player's playlist id does not match the current
+    if (std_stoi(m_PlayerInfo.playlist_id) != m_ProgramInfo.id)
     {
-      total_assets += group.assets.size();
-      m_MediaManager->QueueAssetsForDownload(group.assets);
+      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo playlist_id changed");
+      updateProgram = true;
+    }
+    // if the fetched playlist modified date does not match the current.
+    if (m_ProgramInfo.updated_date != playlist.updated_date)
+    {
+      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo updated_date changed");
+      updateProgram = true;
+    }
+    // if we are forcing the update (ClientFetchUpdatePlayer or ClientTryUseExistingPlayer)
+    if (m_StartupState != ClientUseUpdateInterval)
+    {
+      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo not ClientUseUpdateInterval");
+      updateProgram = true;
+    }
+
+    if (updateProgram)
+    {
+      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo fetching update");
+      TVAPI_PlaylistItems playlistItems;
+      playlistItems.apiKey = m_PlayerInfo.apiKey;
+      playlistItems.apiSecret = m_PlayerInfo.apiSecret;
+      TVAPI_GetPlaylistItems(playlistItems, m_PlayerInfo.playlist_id);
+
+      m_ProgramInfo.video_format = m_PlayerInfo.video_format;
+      CreatePlaylist(m_strHome, m_ProgramInfo, playlist, playlistItems);
+      SaveLocalPlaylist(m_strHome, m_ProgramInfo);
+
+      // send msg to GUIWindowMN to change to horz/vert
+      // see m_ProgramInfo.layout
+      // make sure control id's match those in CGUIWindowMN.cpp
+      if (m_ProgramInfo.layout == "horizontal")
+      {
+        // if we are vertical, switch to horizontal
+        if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
+        {
+          CGUIMessage msg(GUI_MSG_CLICKED, 90144, WINDOW_MEMBERNET);
+          CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
+        }
+      }
+      else if (m_ProgramInfo.layout == "vertical")
+      {
+        // if we are horizontal, switch to vertical
+        if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
+        {
+          CGUIMessage msg(GUI_MSG_CLICKED, 90134, WINDOW_MEMBERNET);
+          CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
+        }
+      }
+
+      // queue all assets belonging to this playlist
+      m_Player->QueueProgramInfo(m_ProgramInfo);
+      int total_assets = 0;
+      m_MediaManager->ClearAssets();
+      for (auto group : m_ProgramInfo.groups)
+      {
+        if (!group.assets.empty())
+        {
+          total_assets += group.assets.size();
+          m_MediaManager->QueueAssetsForDownload(group.assets);
+        }
+      }
+      m_totalAssets = total_assets;
+
+      rtn = true;
     }
   }
-  m_totalAssets = total_assets;
-
-  if (total_assets > 0)
+  else
   {
-    CVariant data;
-    CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNgotPlaylist", data);
+    if (HasLocalPlaylist(m_strHome))
+    {
+      std::string updated_date = m_ProgramInfo.updated_date;
+      if (LoadLocalPlaylist(m_strHome, m_ProgramInfo))
+      {
+        if (m_StartupState != ClientUseUpdateInterval || m_ProgramInfo.updated_date != updated_date)
+        {
+          // send msg to GUIWindowMN to change to horz/vert
+          // see m_ProgramInfo.layout
+          // make sure control id's match those in CGUIWindowMN.cpp
+          if (m_ProgramInfo.layout == "horizontal")
+          {
+            // if we are vertical, switch to horizontal
+            if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
+            {
+              CGUIMessage msg(GUI_MSG_CLICKED, 90144, WINDOW_MEMBERNET);
+              CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
+            }
+          }
+          else if (m_ProgramInfo.layout == "vertical")
+          {
+            // if we are horizontal, switch to vertical
+            if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
+            {
+              CGUIMessage msg(GUI_MSG_CLICKED, 90134, WINDOW_MEMBERNET);
+              CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
+            }
+          }
+
+          // queue all assets belonging to this mediagroup
+          m_Player->QueueProgramInfo(m_ProgramInfo);
+          int total_assets = 0;
+          m_MediaManager->ClearAssets();
+          for (auto group : m_ProgramInfo.groups)
+          {
+            if (!group.assets.empty())
+            {
+              total_assets += group.assets.size();
+              m_MediaManager->QueueAssetsForDownload(group.assets);
+            }
+          }
+          m_totalAssets = total_assets;
+        }
+      }
+      // if we are off-line, always return true so m_FullUpdate will get set right
+      rtn = true;
+    }
   }
 
-  rtn = true;
   return rtn;
-
-//  if (m_HasNetwork && m_StartupState != ClientTryUseExistingPlayer)
-//  {
-//    TVAPI_Playlist playlist;
-//    playlist.apiKey = m_PlayerInfo.apiKey;
-//    playlist.apiSecret = m_PlayerInfo.apiSecret;
-//    TVAPI_GetPlaylist(playlist, m_PlayerInfo.playlist_id);
-//
-//    bool updateProgram = false;
-//    // if the fetched player's playlist id does not match the current
-//    if (std_stoi(m_PlayerInfo.playlist_id) != m_ProgramInfo.id)
-//    {
-//      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo playlist_id changed");
-//      updateProgram = true;
-//    }
-//    // if the fetched playlist modified date does not match the current.
-//    if (m_ProgramInfo.updated_date != playlist.updated_date)
-//    {
-//      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo updated_date changed");
-//      updateProgram = true;
-//    }
-//    // if we are forcing the update (ClientFetchUpdatePlayer or ClientTryUseExistingPlayer)
-//    if (m_StartupState != ClientUseUpdateInterval)
-//    {
-//      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo not ClientUseUpdateInterval");
-//      updateProgram = true;
-//    }
-//
-//    if (updateProgram)
-//    {
-//      CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo fetching update");
-//      TVAPI_PlaylistItems playlistItems;
-//      playlistItems.apiKey = m_PlayerInfo.apiKey;
-//      playlistItems.apiSecret = m_PlayerInfo.apiSecret;
-//      TVAPI_GetPlaylistItems(playlistItems, m_PlayerInfo.playlist_id);
-//
-//      m_ProgramInfo.video_format = m_PlayerInfo.video_format;
-//      CreatePlaylist(m_strHome, m_ProgramInfo, playlist, playlistItems);
-//      SaveLocalPlaylist(m_strHome, m_ProgramInfo);
-//
-//      // send msg to GUIWindowMN to change to horz/vert
-//      // see m_ProgramInfo.layout
-//      // make sure control id's match those in CGUIWindowMN.cpp
-//      if (m_ProgramInfo.layout == "horizontal")
-//      {
-//        // if we are vertical, switch to horizontal
-//        if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
-//        {
-//          CGUIMessage msg(GUI_MSG_CLICKED, 90144, WINDOW_MEMBERNET);
-//          CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
-//        }
-//      }
-//      else if (m_ProgramInfo.layout == "vertical")
-//      {
-//        // if we are horizontal, switch to vertical
-//        if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
-//        {
-//          CGUIMessage msg(GUI_MSG_CLICKED, 90134, WINDOW_MEMBERNET);
-//          CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
-//        }
-//      }
-//
-//      // queue all assets belonging to this playlist
-//      m_Player->QueueProgramInfo(m_ProgramInfo);
-//      int total_assets = 0;
-//      m_MediaManager->ClearAssets();
-//      for (auto group : m_ProgramInfo.groups)
-//      {
-//        if (!group.assets.empty())
-//        {
-//          total_assets += group.assets.size();
-//          m_MediaManager->QueueAssetsForDownload(group.assets);
-//        }
-//      }
-//      m_totalAssets = total_assets;
-//
-//      rtn = true;
-//    }
-//  }
-//  else
-//  {
-//    if (HasLocalPlaylist(m_strHome))
-//    {
-//      std::string updated_date = m_ProgramInfo.updated_date;
-//      if (LoadLocalPlaylist(m_strHome, m_ProgramInfo))
-//      {
-//        if (m_StartupState != ClientUseUpdateInterval || m_ProgramInfo.updated_date != updated_date)
-//        {
-//          // send msg to GUIWindowMN to change to horz/vert
-//          // see m_ProgramInfo.layout
-//          // make sure control id's match those in CGUIWindowMN.cpp
-//          if (m_ProgramInfo.layout == "horizontal")
-//          {
-//            // if we are vertical, switch to horizontal
-//            if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
-//            {
-//              CGUIMessage msg(GUI_MSG_CLICKED, 90144, WINDOW_MEMBERNET);
-//              CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
-//            }
-//          }
-//          else if (m_ProgramInfo.layout == "vertical")
-//          {
-//            // if we are horizontal, switch to vertical
-//            if (!CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
-//            {
-//              CGUIMessage msg(GUI_MSG_CLICKED, 90134, WINDOW_MEMBERNET);
-//              CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
-//            }
-//          }
-//
-//          // queue all assets belonging to this mediagroup
-//          m_Player->QueueProgramInfo(m_ProgramInfo);
-//          int total_assets = 0;
-//          m_MediaManager->ClearAssets();
-//          for (auto group : m_ProgramInfo.groups)
-//          {
-//            if (!group.assets.empty())
-//            {
-//              total_assets += group.assets.size();
-//              m_MediaManager->QueueAssetsForDownload(group.assets);
-//            }
-//          }
-//          m_totalAssets = total_assets;
-//        }
-//      }
-//      // if we are off-line, always return true so m_FullUpdate will get set right
-//      rtn = true;
-//    }
-//  }
-
-//  return rtn;
 }
 
 void CNWClient::GetActions()
@@ -1086,150 +1045,156 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
   playList.groups.clear();
   playList.play_order.clear();
 
-//  if (!playlist.categories.empty())
-//  {
-//    for (auto catagory : playlist.categories)
-//    {
-//      NWGroup group;
-//      group.id = std_stoi(catagory.id);
-//      group.name = catagory.name;
-//      group.next_asset_index = 0;
-//      // always remember original group play order
-//      // this determines group play order. ie.
-//      // pick 1st group, play asset, pick next group, play asset, do all groups
-//      // cycle back, pick 1st group, play next asset...
-//      playList.play_order.push_back(group.id);
-//
-//      // check if we already have handled this group
-//      auto it = std::find_if(playList.groups.begin(), playList.groups.end(),
-//        [group](const NWGroup &existingGroup) { return existingGroup.id == group.id; });
-//      if (it == playList.groups.end())
-//      {
-//        // not present, pull out assets assigned to this group
-//        for (auto item : playlistItems.items)
-//        {
-//          if (item.tv_category_id == catagory.id)
-//          {
-//            NWAsset asset;
-//            asset.id = std_stoi(item.id);
-//            asset.name = item.name;
-//            asset.group_id = std_stoi(item.tv_category_id);
-//            asset.valid = false;
-//
-//            std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
-//            for (auto file : item.files)
-//            {
-//              if (file.type == video_format)
-//              {
-//                // trap out bad urls
-//                if (file.path.find("proxy.membernettv.com") != std::string::npos)
-//                  continue;
-//                asset.id = std_stoi(item.id);
-//                asset.type = file.type;
-//                asset.video_url = file.path;
-//                asset.video_md5 = file.etag;
-//                asset.video_size = std_stoi(file.size);
-//                // format is "2013-02-27 01:00:00"
-//                asset.available_to.SetFromDBDateTime(item.availability_to);
-//                asset.available_from.SetFromDBDateTime(item.availability_from);
-//                asset.video_basename = URIUtils::GetFileName(asset.video_url);
-//                std::string video_extension = URIUtils::GetExtension(asset.video_url);
-//                std::string localpath = kNWClient_DownloadVideoPath + std_to_string(asset.id) + video_extension;
-//                asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
-//                break;
-//              }
-//            }
-//            // if we got an complete asset, save it.
-//            if (!asset.video_url.empty())
-//            {
-//              // trap out bad urls
-//              if (item.thumb.path.find("proxy.membernettv.com") == std::string::npos)
-//              {
-//                // bring over thumb references
-//                asset.thumb_url = item.thumb.path;
-//                asset.thumb_md5 = item.thumb.etag;
-//                asset.thumb_size = std_stoi(item.thumb.size);
-//                asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
-//                std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
-//                std::string localpath = kNWClient_DownloadVideoThumbNailsPath + std_to_string(asset.id) + thumb_extension;
-//                asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
-//              }
-//              group.assets.push_back(asset);
-//            }
-//          }
-//        }
-//        // add the new group regardless of it there are assets present
-//        // player will skip over this group if there are no assets.
-//        playList.groups.push_back(group);
-//      }
-//    }
-//  }
-//  else if (!playlist.files.empty())
-//  {
-  NWGroup group;
-  group.id = 0;
-  group.name = "test";
-  group.next_asset_index = 0;
-  // always remember original group play order
-  // this determines group play order. ie.
-  // pick 1st group, play asset, pick next group, play asset, do all groups
-  // cycle back, pick 1st group, play next asset...
-  playList.play_order.push_back(group.id);
-
-//  for (auto id : playlist.files)
-//  {
-    // find the file item that matches this id
-//    auto it = std::find_if(playlistItems.items.begin(), playlistItems.items.end(),
-//      [id](const TVAPI_PlaylistItem &item) { return item.id == id.id; });
-    for (auto item : playlistItems.items)
+  if (!playlist.categories.empty())
+  {
+    for (auto catagory : playlist.categories)
     {
-//    if (it != playlistItems.items.end())
-//    {
-//      const TVAPI_PlaylistItem &item = *it;
-      NWAsset asset;
-      asset.id = item.id;
-      asset.name = item.name;
-      asset.group_id = group.id;
-      asset.valid = false;
+      NWGroup group;
+      group.id = std_stoi(catagory.id);
+      group.name = catagory.name;
+      group.next_asset_index = 0;
+      // always remember original group play order
+      // this determines group play order. ie.
+      // pick 1st group, play asset, pick next group, play asset, do all groups
+      // cycle back, pick 1st group, play next asset...
+      playList.play_order.push_back(group.id);
 
-//      std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
-      for (auto file : item.files)
+      // check if we already have handled this group
+      auto it = std::find_if(playList.groups.begin(), playList.groups.end(),
+        [group](const NWGroup &existingGroup) { return existingGroup.id == group.id; });
+      if (it == playList.groups.end())
       {
-          asset.id = item.id;
-          asset.type = file.type;
-          asset.video_url = file.path;
-          StringUtils::Replace(asset.video_url, " ", "%20");
-          asset.video_md5 = file.etag;
-          asset.video_size = std_stoi(file.size);
-          // format is "2013-02-27 01:00:00"
-          asset.available_to.SetFromDBDateTime(item.availability_to);
-          asset.available_from.SetFromDBDateTime(item.availability_from);
-          asset.video_basename = URIUtils::GetFileName(asset.video_url);
-          std::string video_extension = URIUtils::GetExtension(asset.video_url);
-          std::string localpath = kNWClient_DownloadVideoPath + asset.id + video_extension;
-          asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
-          break;
+        // not present, pull out assets assigned to this group
+        for (auto item : playlistItems.items)
+        {
+          if (item.tv_category_id == catagory.id)
+          {
+            NWAsset asset;
+            asset.id = std_stoi(item.id);
+            asset.name = item.name;
+            asset.group_id = std_stoi(item.tv_category_id);
+            asset.valid = false;
+
+            std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
+            for (auto file : item.files)
+            {
+              if (file.type == video_format)
+              {
+                // trap out bad urls
+                if (file.path.find("proxy.membernettv.com") != std::string::npos)
+                  continue;
+                asset.id = std_stoi(item.id);
+                asset.type = file.type;
+                asset.video_url = file.path;
+                asset.video_md5 = file.etag;
+                asset.video_size = std_stoi(file.size);
+                // format is "2013-02-27 01:00:00"
+                asset.available_to.SetFromDBDateTime(item.availability_to);
+                asset.available_from.SetFromDBDateTime(item.availability_from);
+                asset.video_basename = URIUtils::GetFileName(asset.video_url);
+                std::string video_extension = URIUtils::GetExtension(asset.video_url);
+                std::string localpath = kNWClient_DownloadVideoPath + std_to_string(asset.id) + video_extension;
+                asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
+                break;
+              }
+            }
+            // if we got an complete asset, save it.
+            if (!asset.video_url.empty())
+            {
+              // trap out bad urls
+              if (item.thumb.path.find("proxy.membernettv.com") == std::string::npos)
+              {
+                // bring over thumb references
+                asset.thumb_url = item.thumb.path;
+                asset.thumb_md5 = item.thumb.etag;
+                asset.thumb_size = std_stoi(item.thumb.size);
+                asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
+                std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
+                std::string localpath = kNWClient_DownloadVideoThumbNailsPath + std_to_string(asset.id) + thumb_extension;
+                asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
+              }
+              group.assets.push_back(asset);
+            }
+          }
+        }
+        // add the new group regardless of it there are assets present
+        // player will skip over this group if there are no assets.
+        playList.groups.push_back(group);
       }
-      // if we got an complete asset, save it.
-      if (!asset.video_url.empty())
-      {
-          // bring over thumb references
-          asset.thumb_url = item.thumb.path;
-          StringUtils::Replace(asset.thumb_url, " ", "%20");
-          asset.thumb_md5 = item.thumb.etag;
-          asset.thumb_size = std_stoi(item.thumb.size);
-          asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
-          std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
-          std::string localpath = kNWClient_DownloadVideoThumbNailsPath + asset.id + thumb_extension;
-          asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
-          group.assets.push_back(asset);
-      }
-//    }
+    }
   }
-  // add the new group regardless of it there are assets present
-  // player will skip over this group if there are no assets.
-  playList.groups.push_back(group);
-//  }
+  else if (!playlist.files.empty())
+  {
+    NWGroup group;
+    group.id = playList.id;
+    group.name = playList.name;
+    group.next_asset_index = 0;
+    // always remember original group play order
+    // this determines group play order. ie.
+    // pick 1st group, play asset, pick next group, play asset, do all groups
+    // cycle back, pick 1st group, play next asset...
+    playList.play_order.push_back(group.id);
+
+    for (auto id : playlist.files)
+    {
+      // find the file item that matches this id
+      auto it = std::find_if(playlistItems.items.begin(), playlistItems.items.end(),
+        [id](const TVAPI_PlaylistItem &item) { return item.id == id.id; });
+      if (it != playlistItems.items.end())
+      {
+        const TVAPI_PlaylistItem &item = *it;
+        NWAsset asset;
+        asset.id = std_stoi(item.id);
+        asset.name = item.name;
+        asset.group_id = group.id;
+        asset.valid = false;
+
+        std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
+        for (auto file : item.files)
+        {
+          if (file.type == video_format)
+          {
+            // trap out bad urls
+            if (file.path.find("proxy.membernettv.com") != std::string::npos)
+              continue;
+            asset.id = std_stoi(item.id);
+            asset.type = file.type;
+            asset.video_url = file.path;
+            asset.video_md5 = file.etag;
+            asset.video_size = std_stoi(file.size);
+            // format is "2013-02-27 01:00:00"
+            asset.available_to.SetFromDBDateTime(item.availability_to);
+            asset.available_from.SetFromDBDateTime(item.availability_from);
+            asset.video_basename = URIUtils::GetFileName(asset.video_url);
+            std::string video_extension = URIUtils::GetExtension(asset.video_url);
+            std::string localpath = kNWClient_DownloadVideoPath + std_to_string(asset.id) + video_extension;
+            asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
+            break;
+          }
+        }
+        // if we got an complete asset, save it.
+        if (!asset.video_url.empty())
+        {
+          // trap out bad urls
+          if (item.thumb.path.find("proxy.membernettv.com") == std::string::npos)
+          {
+            // bring over thumb references
+            asset.thumb_url = item.thumb.path;
+            asset.thumb_md5 = item.thumb.etag;
+            asset.thumb_size = std_stoi(item.thumb.size);
+            asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
+            std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
+            std::string localpath = kNWClient_DownloadVideoThumbNailsPath + std_to_string(asset.id) + thumb_extension;
+            asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
+          }
+          group.assets.push_back(asset);
+        }
+      }
+    }
+    // add the new group regardless of it there are assets present
+    // player will skip over this group if there are no assets.
+    playList.groups.push_back(group);
+  }
 
   return false;
 }
@@ -1244,7 +1209,7 @@ void CNWClient::AssetUpdateCallBack(const void *ctx, NWAsset &asset, AssetDownlo
   if (downloadState == AssetDownloadState::wasDownloaded)
   {
     client->m_Player->MarkValidated(asset);
-    client->LogFilesDownLoaded(asset.id,asset.type);
+    client->LogFilesDownLoaded(std_to_string(asset.id),asset.type);
   }
 
   if (client->m_Player->IsPlaying() || !client->m_bypassDownloadWait)
@@ -1344,8 +1309,6 @@ bool CNWClient::DoAuthorize()
 
 bool CNWClient::IsAuthorized()
 {
-  // hack for envoi
-  return true;
   if (!HasInternet())
     return !m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty();
 

@@ -185,7 +185,7 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
     while (assetElement != nullptr)
     {
       NWAsset asset;
-      XMLUtils::GetString(   assetElement, "id", asset.id);
+      XMLUtils::GetInt(   assetElement, "id", asset.id);
       XMLUtils::GetInt(   assetElement, "group_id", asset.group_id);
       XMLUtils::GetString(assetElement, "name", asset.name);
       XMLUtils::GetString(assetElement, "type", asset.type);
@@ -257,7 +257,7 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
           TiXmlNode *assetNode = groupNode->InsertEndChild(assetElement);
           if (assetNode)
           {
-            XMLUtils::SetString(   assetNode, "id", asset.id);
+            XMLUtils::SetInt(   assetNode, "id", asset.id);
             XMLUtils::SetInt(   assetNode, "group_id", asset.group_id);
             XMLUtils::SetString(assetNode, "name", asset.name);
             XMLUtils::SetString(assetNode, "type", asset.type);

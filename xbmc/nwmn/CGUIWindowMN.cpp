@@ -201,6 +201,7 @@ bool CGUIWindowMN::OnMessage(CGUIMessage& message)
       CVariant data;
       data["msg"] = "authorise";
       CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Other, "xbmc", "MNmsg", data);
+      m_client->DoAuthorize();
       return true;
     }
   }
