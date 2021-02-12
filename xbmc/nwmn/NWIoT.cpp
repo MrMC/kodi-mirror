@@ -138,7 +138,7 @@ static void s_changeShadowValue(
 
     Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
     std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-    String uuid(playerMACAddress);
+    String uuid(playerMACAddress.c_str());
     updateShadowRequest.ClientToken = uuid;
     updateShadowRequest.ThingName = thingName;
     updateShadowRequest.State = state;
@@ -373,7 +373,7 @@ bool CNWIoT::DoAuthorize()
   String endpoint;
   String certificatePath;
   std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-  String clientId(playerMACAddress);
+  String clientId(playerMACAddress.c_str());
   String templateName = "MN";
   std::string strTemplateParameters = "{\"SerialNumber\":\"" + playerMACAddress + "\"}";
   CLog::Log(LOGINFO, "**MN** - CNWIoT::DoAuthorize() - Serial %s", strTemplateParameters);
@@ -719,8 +719,8 @@ void CNWIoT::Process()
 
   std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   std::string strTopic = "dt/envoi/events/MN_" + playerMACAddress;
-  String topic(strTopic);
-  String clientId(playerMACAddress);
+  String topic(strTopic.c_str());
+  String clientId(playerMACAddress.c_str());
   std::promise<bool> connectionCompletedPromise;
   std::promise<void> connectionClosedPromise;
 
