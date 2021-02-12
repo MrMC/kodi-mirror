@@ -28,7 +28,7 @@
 // ---------------------------------------------
 const float       kNWClient_PlayerFloatVersion = 5.0;
 const std::string kNWClient_LogPath = "log/";
-const std::string kNWClient_CertPath = "cert/";
+const std::string kNWClient_CertPath = "certs/";
 const std::string kNWClient_DownloadPath = "downloads/";
 const std::string kNWClient_DownloadVideoPath = "downloads/video/";
 const std::string kNWClient_DownloadVideoThumbNailsPath = "downloads/video_thumbnails/";
