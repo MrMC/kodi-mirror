@@ -332,7 +332,7 @@ bool CNWIoT::DoAuthorize()
   String certificateContent;
 
   RegisterThingResponse registerThingResponse;
-  apiHandle.InitializeLogging(Aws::Crt::LogLevel::Trace, stderr);
+  apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
 
   std::promise<bool> connectionCompletedPromise;
   std::promise<void> connectionClosedPromise;
@@ -664,7 +664,7 @@ void CNWIoT::Process()
   CLog::Log(LOGDEBUG, "**NW** - CNWIoT::Process Started");
   #endif
   ApiHandle apiHandle;
-  apiHandle.InitializeLogging(Aws::Crt::LogLevel::Fatal, stderr);
+  apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
 
   std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   std::string strTopic = "dt/envoi/events/MN_" + playerMACAddress;
