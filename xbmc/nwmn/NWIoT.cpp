@@ -666,8 +666,10 @@ void CNWIoT::Process()
   ApiHandle apiHandle;
   apiHandle.InitializeLogging(Aws::Crt::LogLevel::Fatal, stderr);
 
-  String topic = "TestTopic";
-  String clientId(Aws::Crt::UUID().ToString());
+  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  std::string strTopic = "dt/envoi/events/MN_" + playerMACAddress;
+  String topic(strTopic);
+  String clientId(playerMACAddress);
   std::promise<bool> connectionCompletedPromise;
   std::promise<void> connectionClosedPromise;
 
