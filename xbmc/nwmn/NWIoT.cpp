@@ -91,20 +91,70 @@
 #include <aws/iotidentity/RegisterThingResponse.h>
 #include <aws/iotidentity/RegisterThingSubscriptionRequest.h>
 
+#include <aws/iotshadow/ErrorResponse.h>
+#include <aws/iotshadow/IotShadowClient.h>
+#include <aws/iotshadow/ShadowDeltaUpdatedEvent.h>
+#include <aws/iotshadow/ShadowDeltaUpdatedSubscriptionRequest.h>
+#include <aws/iotshadow/UpdateShadowRequest.h>
+#include <aws/iotshadow/UpdateShadowResponse.h>
+#include <aws/iotshadow/UpdateShadowSubscriptionRequest.h>
+
 static std::string strEndPoint = "a1l40foo64a71s-ats.iot.us-east-2.amazonaws.com";
+
+using namespace Aws::Crt;
+//using namespace Aws::Iotidentity;
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono;      // nanoseconds, system_clock, seconds
+//using namespace Aws::Iotshadow;
+
+static const char *SHADOW_VALUE_DEFAULT = "off";
+
+CCriticalSection CNWIoT::m_payloadLock;
 
 std::string strCAPath;
 std::string strCertPath;
 std::string strPrivatePath;
 std::string strProvisionedKeyPath;
 std::string strProvisionedCrtPath;
+String strThingName;
+String strShadowProperty;
+std::shared_ptr<Mqtt::MqttConnection> connection;
 
-using namespace Aws::Crt;
-using namespace Aws::Iotidentity;
-using namespace std::this_thread; // sleep_for, sleep_until
-using namespace std::chrono;      // nanoseconds, system_clock, seconds
+static void s_changeShadowValue(
+    Aws::Iotshadow::IotShadowClient &client,
+    const String &thingName,
+    const String &shadowProperty,
+    const String &value)
+{
+    CLog::Log(LOGINFO,  "Changing local shadow value to %s.\n", value.c_str());
 
-CCriticalSection CNWIoT::m_payloadLock;
+    Aws::Iotshadow::ShadowState state;
+    JsonObject desired;
+    desired.WithString(shadowProperty, value);
+    JsonObject reported;
+    reported.WithString(shadowProperty, value);
+    state.Desired = desired;
+    state.Reported = reported;
+
+    Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
+    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    String uuid(playerMACAddress);
+    updateShadowRequest.ClientToken = uuid;
+    updateShadowRequest.ThingName = thingName;
+    updateShadowRequest.State = state;
+
+    auto publishCompleted = [thingName, value](int ioErr) {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+            CLog::Log(LOGINFO,  "failed to update %s shadow state: error %s\n", thingName.c_str(), ErrorDebugString(ioErr));
+            return;
+        }
+
+        CLog::Log(LOGINFO,  "Successfully updated shadow state for %s, to %s\n", thingName.c_str(), value.c_str());
+    };
+
+    client.PublishUpdateShadow(updateShadowRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, std::move(publishCompleted));
+}
 
 CNWIoT::CNWIoT()
 : CThread("CNWIoT")
@@ -118,6 +168,7 @@ CNWIoT::CNWIoT()
   strCAPath = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "root-CA.crt");
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump provisioned %s %s", strProvisionedCrtPath, strProvisionedKeyPath);
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump private %s %s", strPrivatePath, strCertPath);
+  strThingName = "MN_" + CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
 }
 
 CNWIoT::~CNWIoT()
@@ -241,8 +292,8 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
   */
   if (!msgPayload.isNull())
   {
-    std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-    if (msgPayload["type"].asString() == "machineAction" && msgPayload["machineId"] == uuid)
+    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    if (msgPayload["type"].asString() == "machineAction" && msgPayload["machineId"] == playerMACAddress)
     {
       CVariant msgDetails = msgPayload["details"];
       if (!msgDetails.isNull())
@@ -321,17 +372,17 @@ bool CNWIoT::DoAuthorize()
   String token;
   String endpoint;
   String certificatePath;
-  String clientId(Aws::Crt::UUID().ToString());
+  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  String clientId(playerMACAddress);
   String templateName = "MN";
-  std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-  std::string strTemplateParameters = "{\"SerialNumber\":\"" + uuid + "\"}";
+  std::string strTemplateParameters = "{\"SerialNumber\":\"" + playerMACAddress + "\"}";
   CLog::Log(LOGINFO, "**MN** - CNWIoT::DoAuthorize() - Serial %s", strTemplateParameters);
   String templateParameters(strTemplateParameters.c_str(), strTemplateParameters.size());
 
   String keyContent;
   String certificateContent;
 
-  RegisterThingResponse registerThingResponse;
+  Aws::Iotidentity::RegisterThingResponse registerThingResponse;
   apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
 
   std::promise<bool> connectionCompletedPromise;
@@ -427,7 +478,7 @@ bool CNWIoT::DoAuthorize()
 
   if (connectionCompletedPromise.get_future().get())
   {
-    IotIdentityClient identityClient(connection);
+    Aws::Iotidentity::IotIdentityClient identityClient(connection);
 
     std::promise<void> keysPublishCompletedPromise;
     std::promise<void> keysAcceptedCompletedPromise;
@@ -464,7 +515,7 @@ bool CNWIoT::DoAuthorize()
        keysRejectedCompletedPromise.set_value();
     };
 
-    auto onKeysAccepted = [&](CreateKeysAndCertificateResponse *response, int ioErr)
+    auto onKeysAccepted = [&](Aws::Iotidentity::CreateKeysAndCertificateResponse *response, int ioErr)
     {
        if (ioErr == AWS_OP_SUCCESS)
        {
@@ -479,7 +530,7 @@ bool CNWIoT::DoAuthorize()
        }
     };
 
-    auto onKeysRejected = [&](ErrorResponse *error, int ioErr)
+    auto onKeysRejected = [&](Aws::Iotidentity::ErrorResponse *error, int ioErr)
     {
        if (ioErr == AWS_OP_SUCCESS)
        {
@@ -511,7 +562,7 @@ bool CNWIoT::DoAuthorize()
        registerRejectedCompletedPromise.set_value();
     };
 
-    auto onRegisterAccepted = [&](RegisterThingResponse *response, int ioErr)
+    auto onRegisterAccepted = [&](Aws::Iotidentity::RegisterThingResponse *response, int ioErr)
     {
        if (ioErr == AWS_OP_SUCCESS)
        {
@@ -523,7 +574,7 @@ bool CNWIoT::DoAuthorize()
        }
     };
 
-    auto onRegisterRejected = [&](ErrorResponse *error, int ioErr)
+    auto onRegisterRejected = [&](Aws::Iotidentity::ErrorResponse *error, int ioErr)
     {
        if (ioErr == AWS_OP_SUCCESS)
        {
@@ -550,18 +601,18 @@ bool CNWIoT::DoAuthorize()
     };
 
     // CreateKeysAndCertificate workflow
-    CreateKeysAndCertificateSubscriptionRequest keySubscriptionRequest;
+    Aws::Iotidentity::CreateKeysAndCertificateSubscriptionRequest keySubscriptionRequest;
     identityClient.SubscribeToCreateKeysAndCertificateAccepted(
         keySubscriptionRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onKeysAccepted, onKeysAcceptedSubAck);
 
     identityClient.SubscribeToCreateKeysAndCertificateRejected(
         keySubscriptionRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onKeysRejected, onKeysRejectedSubAck);
 
-    CreateKeysAndCertificateRequest createKeysAndCertificateRequest;
+    Aws::Iotidentity::CreateKeysAndCertificateRequest createKeysAndCertificateRequest;
     identityClient.PublishCreateKeysAndCertificate(
         createKeysAndCertificateRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onKeysPublishSubAck);
 
-    RegisterThingSubscriptionRequest registerSubscriptionRequest;
+    Aws::Iotidentity::RegisterThingSubscriptionRequest registerSubscriptionRequest;
     registerSubscriptionRequest.TemplateName = templateName;
 
     identityClient.SubscribeToRegisterThingAccepted(
@@ -572,7 +623,7 @@ bool CNWIoT::DoAuthorize()
 
     Sleep(1000);
 
-    RegisterThingRequest registerThingRequest;
+    Aws::Iotidentity::RegisterThingRequest registerThingRequest;
     registerThingRequest.TemplateName = templateName;
 
     const Aws::Crt::String jsonValue = templateParameters;
@@ -801,47 +852,203 @@ void CNWIoT::Process()
     Sleep(1000);
   }
 
+//  if (connectionCompletedPromise.get_future().get())
+//  {
+//    auto onPublish = [&](Mqtt::MqttConnection &, const String &topic, const ByteBuf &byteBuf)
+//    {
+//      CVariant resultObject;
+//      String payload((char *)byteBuf.buffer, byteBuf.len);
+//      CJSONVariantParser::Parse(payload.c_str(), resultObject);
+//      MsgReceived(resultObject);
+//    };
+//
+//    /*
+//     * Subscribe for incoming publish messages on topic.
+//     */
+//    std::promise<void> subscribeFinishedPromise;
+//    auto onSubAck = [&](Mqtt::MqttConnection &, uint16_t packetId, const String &topic, Mqtt::QOS QoS, int errorCode)
+//    {
+//            if (errorCode)
+//            {
+//              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe failed with error %s", aws_error_debug_str(errorCode));
+//                exit(-1);
+//            }
+//            else
+//            {
+//                if (!packetId || QoS == AWS_MQTT_QOS_FAILURE)
+//                {
+//                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe rejected by the broker.");
+//                    exit(-1);
+//                }
+//                else
+//                {
+//                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe on topic %s on packetId %d Succeeded", topic.c_str(), packetId);
+//                }
+//            }
+//            subscribeFinishedPromise.set_value();
+//        };
+//
+//      connection->Subscribe(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, onPublish, onSubAck);
+//      subscribeFinishedPromise.get_future().wait();
+//  }
+
   if (connectionCompletedPromise.get_future().get())
   {
-    auto onPublish = [&](Mqtt::MqttConnection &, const String &topic, const ByteBuf &byteBuf)
-    {
-      CVariant resultObject;
-      String payload((char *)byteBuf.buffer, byteBuf.len);
-      CJSONVariantParser::Parse(payload.c_str(), resultObject);
-      MsgReceived(resultObject);
-    };
+      Aws::Iotshadow::IotShadowClient shadowClient(connection);
 
-    /*
-     * Subscribe for incoming publish messages on topic.
-     */
-    std::promise<void> subscribeFinishedPromise;
-    auto onSubAck = [&](Mqtt::MqttConnection &, uint16_t packetId, const String &topic, Mqtt::QOS QoS, int errorCode)
-    {
-            if (errorCode)
-            {
-              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe failed with error %s", aws_error_debug_str(errorCode));
-                exit(-1);
-            }
-            else
-            {
-                if (!packetId || QoS == AWS_MQTT_QOS_FAILURE)
-                {
-                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe rejected by the broker.");
-                    exit(-1);
-                }
-                else
-                {
-                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe on topic %s on packetId %d Succeeded", topic.c_str(), packetId);
-                }
-            }
-            subscribeFinishedPromise.set_value();
-        };
+      std::promise<void> subscribeDeltaCompletedPromise;
+      std::promise<void> subscribeDeltaAcceptedCompletedPromise;
+      std::promise<void> subscribeDeltaRejectedCompletedPromise;
 
-      connection->Subscribe(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, onPublish, onSubAck);
-      subscribeFinishedPromise.get_future().wait();
+      auto onDeltaUpdatedSubAck = [&](int ioErr) {
+          if (ioErr != AWS_OP_SUCCESS)
+          {
+              CLog::Log(LOGINFO,  "Error subscribing to shadow delta: %s\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+          else
+          {
+            subscribeDeltaCompletedPromise.set_value();
+          }
+      };
+
+      auto onDeltaUpdatedAcceptedSubAck = [&](int ioErr) {
+          if (ioErr != AWS_OP_SUCCESS)
+          {
+              CLog::Log(LOGINFO,  "Error subscribing to shadow delta accepted: %s\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+          else
+          {
+            subscribeDeltaAcceptedCompletedPromise.set_value();
+          }
+      };
+
+      auto onDeltaUpdatedRejectedSubAck = [&](int ioErr) {
+          if (ioErr != AWS_OP_SUCCESS)
+          {
+              CLog::Log(LOGINFO,  "Error subscribing to shadow delta rejected: %s\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+          else
+          {
+            subscribeDeltaRejectedCompletedPromise.set_value();
+          }
+      };
+
+      auto onDeltaUpdated = [&](Aws::Iotshadow::ShadowDeltaUpdatedEvent *event, int ioErr) {
+          if (event)
+          {
+              CLog::Log(LOGINFO,  "Received shadow delta event.\n");
+              if (event->State && event->State->View().ValueExists(strShadowProperty))
+              {
+                  JsonView objectView = event->State->View().GetJsonObject(strShadowProperty);
+
+                  if (objectView.IsNull())
+                  {
+                      CLog::Log(LOGINFO,
+                          "Delta reports that %s was deleted. Resetting defaults...\n",
+                              strShadowProperty.c_str());
+                      s_changeShadowValue(shadowClient, strThingName, strShadowProperty, SHADOW_VALUE_DEFAULT);
+                  }
+                  else
+                  {
+                      CLog::Log(LOGINFO,
+                          "Delta reports that \"%s\" has a desired value of \"%s\", Changing local value...\n",
+                              strShadowProperty.c_str(),
+                          event->State->View().GetString(strShadowProperty).c_str());
+                      s_changeShadowValue(
+                          shadowClient, strThingName, strShadowProperty, event->State->View().GetString(strShadowProperty));
+                  }
+              }
+              else
+              {
+                  CLog::Log(LOGINFO,  "Delta did not report a change in \"%s\".\n", strShadowProperty.c_str());
+              }
+          }
+
+          if (ioErr)
+          {
+              CLog::Log(LOGINFO,  "Error processing shadow delta: %s\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+      };
+
+      auto onUpdateShadowAccepted = [&](Aws::Iotshadow::UpdateShadowResponse *response, int ioErr) {
+          if (ioErr == AWS_OP_SUCCESS)
+          {
+              CLog::Log(LOGINFO,
+                  "Finished updating reported shadow value to %s.\n",
+                  response->State->Reported->View().GetString(strShadowProperty).c_str());
+              CLog::Log(LOGINFO,  "Enter desired value:\n");
+          }
+          else
+          {
+              CLog::Log(LOGINFO,  "Error on subscription: %s.\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+      };
+
+      auto onUpdateShadowRejected = [&](Aws::Iotshadow::ErrorResponse *error, int ioErr) {
+          if (ioErr == AWS_OP_SUCCESS)
+          {
+              CLog::Log(LOGINFO,
+                  "Update of shadow state failed with message %s and code %d.",
+                  error->Message->c_str(),
+                  *error->Code);
+          }
+          else
+          {
+              CLog::Log(LOGINFO,  "Error on subscription: %s.\n", ErrorDebugString(ioErr));
+//              exit(-1);
+          }
+      };
+
+      Aws::Iotshadow::ShadowDeltaUpdatedSubscriptionRequest shadowDeltaUpdatedRequest;
+      shadowDeltaUpdatedRequest.ThingName = strThingName;
+
+      shadowClient.SubscribeToShadowDeltaUpdatedEvents(
+          shadowDeltaUpdatedRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onDeltaUpdated, onDeltaUpdatedSubAck);
+
+      Aws::Iotshadow::UpdateShadowSubscriptionRequest updateShadowSubscriptionRequest;
+      updateShadowSubscriptionRequest.ThingName = strThingName;
+
+      shadowClient.SubscribeToUpdateShadowAccepted(
+          updateShadowSubscriptionRequest,
+          AWS_MQTT_QOS_AT_LEAST_ONCE,
+          onUpdateShadowAccepted,
+          onDeltaUpdatedAcceptedSubAck);
+
+      shadowClient.SubscribeToUpdateShadowRejected(
+          updateShadowSubscriptionRequest,
+          AWS_MQTT_QOS_AT_LEAST_ONCE,
+          onUpdateShadowRejected,
+          onDeltaUpdatedRejectedSubAck);
+
+      subscribeDeltaCompletedPromise.get_future().wait();
+      subscribeDeltaAcceptedCompletedPromise.get_future().wait();
+      subscribeDeltaRejectedCompletedPromise.get_future().wait();
+      s_changeShadowValue(shadowClient, strThingName, "status", "blah");
+
+//      while (true)
+//      {
+//          CLog::Log(LOGINFO,  "Enter Desired state of %s:\n", strShadowProperty.c_str());
+//          String input;
+//          std::cin >> input;
+//
+//          if (input == "exit" || input == "quit")
+//          {
+//              CLog::Log(LOGINFO,  "Exiting...");
+//              break;
+//          }
+//
+//          s_changeShadowValue(shadowClient, strThingName, strShadowProperty, input);
+//      }
   }
+
   while (!m_bStop)
   {
+//    s_changeShadowValue(shadowClient, strThingName, strShadowProperty, "blah");
     if (!m_payload.empty())
     {
       ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)m_payload.c_str(), m_payload.length());
@@ -890,8 +1097,8 @@ void CNWIoT::notifyEvent(std::string type, CVariant details)
 {
   CVariant payloadObject;
   CDateTime time = CDateTime::GetCurrentDateTime();
-  std::string uuid = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-  payloadObject["machineId"] = uuid;
+  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  payloadObject["machineId"] = playerMACAddress;
   payloadObject["type"] = type;
   payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
   payloadObject["details"] = details["details"];
