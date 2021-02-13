@@ -901,8 +901,7 @@ void CNWIoT::Process()
       auto onDeltaUpdatedSubAck = [&](int ioErr) {
           if (ioErr != AWS_OP_SUCCESS)
           {
-              CLog::Log(LOGINFO,  "Error subscribing to shadow delta: %s\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta: %s\n", ErrorDebugString(ioErr));
           }
           else
           {
@@ -913,8 +912,7 @@ void CNWIoT::Process()
       auto onDeltaUpdatedAcceptedSubAck = [&](int ioErr) {
           if (ioErr != AWS_OP_SUCCESS)
           {
-              CLog::Log(LOGINFO,  "Error subscribing to shadow delta accepted: %s\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta accepted: %s\n", ErrorDebugString(ioErr));
           }
           else
           {
@@ -925,8 +923,7 @@ void CNWIoT::Process()
       auto onDeltaUpdatedRejectedSubAck = [&](int ioErr) {
           if (ioErr != AWS_OP_SUCCESS)
           {
-              CLog::Log(LOGINFO,  "Error subscribing to shadow delta rejected: %s\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta rejected: %s\n", ErrorDebugString(ioErr));
           }
           else
           {
@@ -937,38 +934,64 @@ void CNWIoT::Process()
       auto onDeltaUpdated = [&](Aws::Iotshadow::ShadowDeltaUpdatedEvent *event, int ioErr) {
           if (event)
           {
-              CLog::Log(LOGINFO,  "Received shadow delta event.\n");
-              if (event->State && event->State->View().ValueExists(strShadowProperty))
+              strShadowProperty = "orientation";
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Received shadow delta event.\n");
+              if (event->State)
               {
+                if (event->State->View().ValueExists("orientation"))
+                {
                   JsonView objectView = event->State->View().GetJsonObject(strShadowProperty);
+                  if (!objectView.IsNull())
+                  {
+                      if (event->State->View().GetString("orientation") == "vertical")
+                        CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, true);
+                      else
+                        CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, false);
+                      CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
+                      s_changeShadowValue(shadowClient, strThingName, "orientation", event->State->View().GetString("orientation"));
+                  }
+                }
+                if (event->State->View().ValueExists("playback"))
+                {
+                  CNWClient* client = CNWClient::GetClient();
+                  if (client->IsAuthorized())
+                  {
+                    if (event->State->View().GetString("playback") == "play")
+                      client->Startup(false, false);
+                    else if (event->State->View().GetString("playback") == "stop")
+                      client->StopPlaying();
 
-                  if (objectView.IsNull())
-                  {
-                      CLog::Log(LOGINFO,
-                          "Delta reports that %s was deleted. Resetting defaults...\n",
-                              strShadowProperty.c_str());
-                      s_changeShadowValue(shadowClient, strThingName, strShadowProperty, SHADOW_VALUE_DEFAULT);
+                    s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
                   }
-                  else
-                  {
-                      CLog::Log(LOGINFO,
-                          "Delta reports that \"%s\" has a desired value of \"%s\", Changing local value...\n",
-                              strShadowProperty.c_str(),
-                          event->State->View().GetString(strShadowProperty).c_str());
-                      s_changeShadowValue(
-                          shadowClient, strThingName, strShadowProperty, event->State->View().GetString(strShadowProperty));
-                  }
+                }
+//                  }
+
+//                  if (objectView.IsNull())
+//                  {
+//                      CLog::Log(LOGINFO,
+//                          "**MN** - CNWIoT::Process() - Delta reports that %s was deleted. Resetting defaults...\n",
+//                              strShadowProperty.c_str());
+//                      s_changeShadowValue(shadowClient, strThingName, strShadowProperty, SHADOW_VALUE_DEFAULT);
+//                  }
+//                  else
+//                  {
+//                      CLog::Log(LOGINFO,
+//                          "**MN** - CNWIoT::Process() - Delta reports that \"%s\" has a desired value of \"%s\", Changing local value...\n",
+//                              strShadowProperty.c_str(),
+//                          event->State->View().GetString(strShadowProperty).c_str());
+//                      s_changeShadowValue(
+//                          shadowClient, strThingName, strShadowProperty, event->State->View().GetString(strShadowProperty));
+//                  }
               }
               else
               {
-                  CLog::Log(LOGINFO,  "Delta did not report a change in \"%s\".\n", strShadowProperty.c_str());
+                  CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Delta did not report a change in \"%s\".\n", strShadowProperty.c_str());
               }
           }
 
           if (ioErr)
           {
-              CLog::Log(LOGINFO,  "Error processing shadow delta: %s\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error processing shadow delta: %s\n", ErrorDebugString(ioErr));
           }
       };
 
@@ -976,14 +999,12 @@ void CNWIoT::Process()
           if (ioErr == AWS_OP_SUCCESS)
           {
               CLog::Log(LOGINFO,
-                  "Finished updating reported shadow value to %s.\n",
+                  "**MN** - CNWIoT::Process() - Finished updating reported shadow value to %s.\n",
                   response->State->Reported->View().GetString(strShadowProperty).c_str());
-              CLog::Log(LOGINFO,  "Enter desired value:\n");
           }
           else
           {
-              CLog::Log(LOGINFO,  "Error on subscription: %s.\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on subscription: %s.\n", ErrorDebugString(ioErr));
           }
       };
 
@@ -991,14 +1012,13 @@ void CNWIoT::Process()
           if (ioErr == AWS_OP_SUCCESS)
           {
               CLog::Log(LOGINFO,
-                  "Update of shadow state failed with message %s and code %d.",
+                  "**MN** - CNWIoT::Process() - Update of shadow state failed with message %s and code %d.",
                   error->Message->c_str(),
                   *error->Code);
           }
           else
           {
-              CLog::Log(LOGINFO,  "Error on subscription: %s.\n", ErrorDebugString(ioErr));
-//              exit(-1);
+              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on subscription: %s.\n", ErrorDebugString(ioErr));
           }
       };
 
@@ -1026,7 +1046,7 @@ void CNWIoT::Process()
       subscribeDeltaCompletedPromise.get_future().wait();
       subscribeDeltaAcceptedCompletedPromise.get_future().wait();
       subscribeDeltaRejectedCompletedPromise.get_future().wait();
-      s_changeShadowValue(shadowClient, strThingName, "status", "blah");
+      s_changeShadowValue(shadowClient, strThingName, "status", "online");
 
 //      while (true)
 //      {
