@@ -197,21 +197,22 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
       CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Announce() - Playback started");
       #endif
       CFileItem currentFile(g_application.CurrentFileItem());
-      std::string strPath = currentFile.GetPath();
-      std::string assetID = URIUtils::GetFileName(strPath);
-      URIUtils::RemoveExtension(assetID);
-      std::string format = currentFile.GetProperty("video_format").asString();
-      CDateTime time = CDateTime::GetCurrentDateTime();
-      std::string payload = StringUtils::Format("%s,%s,%s",
-        time.GetAsDBDateTime().c_str(),
-        assetID.c_str(),
-        format.c_str()
-      );
-      // { machineId: ‘’, eventType: ‘’, details: { } }
-      CVariant payloadObject;
-      payloadObject["details"]["assetId"] = assetID;
-      payloadObject["details"]["raw"] = payload;
-      notifyEvent("playbackStart", payloadObject);
+      if (currentFile.GetProperty("Membernet").asBoolean())
+      {
+        std::string assetID = currentFile.GetProperty("assetId").asString();;
+        std::string format = currentFile.GetProperty("video_format").asString();
+        CDateTime time = CDateTime::GetCurrentDateTime();
+        std::string payload = StringUtils::Format("%s,%s,%s",
+          time.GetAsDBDateTime().c_str(),
+          assetID.c_str(),
+          format.c_str()
+        );
+        // { machineId: ‘’, eventType: ‘’, details: { } }
+        CVariant payloadObject;
+        payloadObject["details"]["assetId"] = assetID;
+        payloadObject["details"]["raw"] = payload;
+        notifyEvent("playbackStart", payloadObject);
+      }
     }
     else if (message == "OnStop")
     {
