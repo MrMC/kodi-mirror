@@ -170,6 +170,7 @@ CNWIoT::CNWIoT()
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump private %s %s", strPrivatePath, strCertPath);
   std::string thingName = "MN_" + CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   strThingName = thingName.c_str();
+  m_heartbeatTimer.StartZero();
 }
 
 CNWIoT::~CNWIoT()
@@ -352,7 +353,7 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
         if (msgDetails.isMember("reboot") && msgDetails["reboot"].asBoolean())
         {
           // reboot the machine
-          // disabked for testing on OSX
+          // disabled for testing on OSX
           // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
         }
 
@@ -1066,7 +1067,13 @@ void CNWIoT::Process()
 
   while (!m_bStop)
   {
-//    s_changeShadowValue(shadowClient, strThingName, strShadowProperty, "blah");
+    /// report online status every 10000ms (10sec)
+    if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 10000.0f)
+    {
+      s_changeShadowValue(shadowClient, strThingName, "status", "online");
+      m_heartbeatTimer.StartZero();
+    }
+
     if (!m_payload.empty())
     {
       ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)m_payload.c_str(), m_payload.length());
