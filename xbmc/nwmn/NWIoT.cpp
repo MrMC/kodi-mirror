@@ -214,11 +214,8 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         #if ENABLE_NWIOT_DEBUGLOGS
         CLog::Log(LOGINFO, "**MN** - CNWIoT::Announce() - Playback stopped");
         #endif
-        CFileItem currentFile(g_application.CurrentFileItem());
-        std::string strPath = currentFile.GetPath();
-        std::string assetID = URIUtils::GetFileName(strPath);
-        URIUtils::RemoveExtension(assetID);
-        std::string format = currentFile.GetProperty("video_format").asString();
+        std::string assetID = data["assetID"].asString();
+        std::string format = data["format"].asString();
         CDateTime time = CDateTime::GetCurrentDateTime();
         std::string payload = StringUtils::Format("%s,%s,%s",
           time.GetAsDBDateTime().c_str(),

@@ -3282,6 +3282,11 @@ void CApplication::OnPlayBackStopped()
 
   CVariant data(CVariant::VariantTypeObject);
   data["end"] = false;
+  if (m_itemCurrentFile->GetProperty("Membernet").asBoolean())
+  {
+    data["assetID"] = m_itemCurrentFile->GetProperty("assetId").asString();;
+    data["format"] = m_itemCurrentFile->GetProperty("video_format").asString();
+  }
   CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "OnStop",
                                                      m_itemCurrentFile, data);
 
