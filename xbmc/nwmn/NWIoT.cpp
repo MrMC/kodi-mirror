@@ -107,7 +107,11 @@ using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono;      // nanoseconds, system_clock, seconds
 //using namespace Aws::Iotshadow;
 
-static const char *SHADOW_VALUE_DEFAULT = "off";
+static const char *SHADOW_STATUS_VALUE_DEFAULT = "offline";
+static const char *SHADOW_PLAYBACK_VALUE_DEFAULT = "stop";
+static const char *SHADOW_ORIENTATION_VALUE_DEFAULT = "horizontal";
+static const char *SHADOW_REBOOT_VALUE_DEFAULT = "false";
+static const char *SHADOW_QUIT_VALUE_DEFAULT = "false";
 
 CCriticalSection CNWIoT::m_payloadLock;
 
@@ -891,9 +895,10 @@ void CNWIoT::Process()
 //      subscribeFinishedPromise.get_future().wait();
 //  }
 
+  Aws::Iotshadow::IotShadowClient shadowClient(connection);
   if (connectionCompletedPromise.get_future().get())
   {
-      Aws::Iotshadow::IotShadowClient shadowClient(connection);
+//      Aws::Iotshadow::IotShadowClient shadowClient(connection);
 
       std::promise<void> subscribeDeltaCompletedPromise;
       std::promise<void> subscribeDeltaAcceptedCompletedPromise;
@@ -964,6 +969,30 @@ void CNWIoT::Process()
 
                     s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
                   }
+                }
+                if (event->State->View().ValueExists("quit"))
+                {
+                  if (event->State->View().GetBool("quit"))
+                  {
+                    s_changeShadowValue(shadowClient, strThingName, "quit", "false");
+                    Sleep(2000);
+                    KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
+                  }
+                  else
+                    s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+                }
+                if (event->State->View().ValueExists("reboot"))
+                {
+                  if (event->State->View().GetBool("reboot"))
+                  {
+                    s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
+                    Sleep(2000);
+                    // reboot the machine
+                    // disabled for testing on OSX
+                    // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+                  }
+                  else
+                    s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
                 }
 //                  }
 
@@ -1047,7 +1076,9 @@ void CNWIoT::Process()
       subscribeDeltaCompletedPromise.get_future().wait();
       subscribeDeltaAcceptedCompletedPromise.get_future().wait();
       subscribeDeltaRejectedCompletedPromise.get_future().wait();
-      s_changeShadowValue(shadowClient, strThingName, "status", "online");
+      // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
+      s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+      s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
 
 //      while (true)
 //      {
