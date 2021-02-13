@@ -28,6 +28,7 @@
 #include "interfaces/IAnnouncer.h"
 #include "threads/CriticalSection.h"
 #include "threads/Thread.h"
+#include "utils/Stopwatch.h"
 
 #define ENABLE_NWIOT_DEBUGLOGS 1
 
@@ -55,6 +56,7 @@ protected:
   void Process() override;
   static CCriticalSection m_payloadLock;
   std::string   m_payload;
+  CStopWatch m_heartbeatTimer;
 
 };
 
