@@ -121,14 +121,14 @@ std::string strPrivatePath;
 std::string strProvisionedKeyPath;
 std::string strProvisionedCrtPath;
 String strThingName;
-String strShadowProperty;
 std::shared_ptr<Mqtt::MqttConnection> connection;
 
 static void s_changeShadowValue(
     Aws::Iotshadow::IotShadowClient &client,
     const String &thingName,
     const String &shadowProperty,
-    const String &value)
+    const String &value,
+    bool resetDesired = true)
 {
     CLog::Log(LOGINFO,  "Changing local shadow value to %s.\n", value.c_str());
 
@@ -137,7 +137,8 @@ static void s_changeShadowValue(
     desired.WithString(shadowProperty, value);
     JsonObject reported;
     reported.WithString(shadowProperty, value);
-    state.Desired = desired;
+    if (resetDesired)
+      state.Desired = desired;
     state.Reported = reported;
 
     Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
@@ -800,13 +801,13 @@ void CNWIoT::Process()
 
   if (!strProvisionedCrtPath.empty() && !strProvisionedKeyPath.empty())
   {
-      builder = Aws::Iot::MqttClientConnectionConfigBuilder(strProvisionedCrtPath.c_str(), strProvisionedKeyPath.c_str());
+    builder = Aws::Iot::MqttClientConnectionConfigBuilder(strProvisionedCrtPath.c_str(), strProvisionedKeyPath.c_str());
   }
 
   builder.WithEndpoint(strEndPoint.c_str());
   if (!strCAPath.empty())
   {
-      builder.WithCertificateAuthority(strCAPath.c_str());
+    builder.WithCertificateAuthority(strCAPath.c_str());
   }
 
   auto clientConfig = builder.Build();
@@ -832,8 +833,8 @@ void CNWIoT::Process()
 
   if (!*connection)
   {
-      CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Process() - Failed to create client");
-      return;
+    CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Process() - Failed to create client");
+    return;
   }
 
   connection->OnConnectionCompleted = std::move(onConnectionCompleted);
@@ -848,7 +849,6 @@ void CNWIoT::Process()
     if (!connection->Connect(clientId.c_str(), false, 1000))
     {
       CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - MQTT Connection failed with error %s", ErrorDebugString(connection->LastError()));
-
     }
     else
       connected = true;
@@ -898,202 +898,167 @@ void CNWIoT::Process()
   Aws::Iotshadow::IotShadowClient shadowClient(connection);
   if (connectionCompletedPromise.get_future().get())
   {
-//      Aws::Iotshadow::IotShadowClient shadowClient(connection);
+    std::promise<void> subscribeDeltaCompletedPromise;
+    std::promise<void> subscribeDeltaAcceptedCompletedPromise;
+    std::promise<void> subscribeDeltaRejectedCompletedPromise;
 
-      std::promise<void> subscribeDeltaCompletedPromise;
-      std::promise<void> subscribeDeltaAcceptedCompletedPromise;
-      std::promise<void> subscribeDeltaRejectedCompletedPromise;
+    auto onDeltaUpdatedSubAck = [&](int ioErr)
+    {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta: %s\n", ErrorDebugString(ioErr));
+        }
+        else
+        {
+          subscribeDeltaCompletedPromise.set_value();
+        }
+    };
 
-      auto onDeltaUpdatedSubAck = [&](int ioErr) {
-          if (ioErr != AWS_OP_SUCCESS)
-          {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta: %s\n", ErrorDebugString(ioErr));
-          }
-          else
-          {
-            subscribeDeltaCompletedPromise.set_value();
-          }
-      };
+    auto onDeltaUpdatedAcceptedSubAck = [&](int ioErr)
+    {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta accepted: %s\n", ErrorDebugString(ioErr));
+        }
+        else
+        {
+          subscribeDeltaAcceptedCompletedPromise.set_value();
+        }
+    };
 
-      auto onDeltaUpdatedAcceptedSubAck = [&](int ioErr) {
-          if (ioErr != AWS_OP_SUCCESS)
-          {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta accepted: %s\n", ErrorDebugString(ioErr));
-          }
-          else
-          {
-            subscribeDeltaAcceptedCompletedPromise.set_value();
-          }
-      };
+    auto onDeltaUpdatedRejectedSubAck = [&](int ioErr)
+    {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta rejected: %s\n", ErrorDebugString(ioErr));
+        }
+        else
+        {
+          subscribeDeltaRejectedCompletedPromise.set_value();
+        }
+    };
 
-      auto onDeltaUpdatedRejectedSubAck = [&](int ioErr) {
-          if (ioErr != AWS_OP_SUCCESS)
+    auto onDeltaUpdated = [&](Aws::Iotshadow::ShadowDeltaUpdatedEvent *event, int ioErr)
+    {
+        if (event)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Received shadow delta event.\n");
+          if (event->State)
           {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error subscribing to shadow delta rejected: %s\n", ErrorDebugString(ioErr));
-          }
-          else
-          {
-            subscribeDeltaRejectedCompletedPromise.set_value();
-          }
-      };
-
-      auto onDeltaUpdated = [&](Aws::Iotshadow::ShadowDeltaUpdatedEvent *event, int ioErr) {
-          if (event)
-          {
-              strShadowProperty = "orientation";
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Received shadow delta event.\n");
-              if (event->State)
+            if (event->State->View().ValueExists("orientation"))
+            {
+              JsonView objectView = event->State->View().GetJsonObject("orientation");
+              if (!objectView.IsNull())
               {
-                if (event->State->View().ValueExists("orientation"))
-                {
-                  JsonView objectView = event->State->View().GetJsonObject(strShadowProperty);
-                  if (!objectView.IsNull())
-                  {
-                      if (event->State->View().GetString("orientation") == "vertical")
-                        CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, true);
-                      else
-                        CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, false);
-                      CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
-                      s_changeShadowValue(shadowClient, strThingName, "orientation", event->State->View().GetString("orientation"));
-                  }
-                }
-                if (event->State->View().ValueExists("playback"))
-                {
-                  CNWClient* client = CNWClient::GetClient();
-                  if (client->IsAuthorized())
-                  {
-                    if (event->State->View().GetString("playback") == "play")
-                      client->Startup(false, false);
-                    else if (event->State->View().GetString("playback") == "stop")
-                      client->StopPlaying();
-
-                    s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
-                  }
-                }
-                if (event->State->View().ValueExists("quit"))
-                {
-                  if (event->State->View().GetBool("quit"))
-                  {
-                    s_changeShadowValue(shadowClient, strThingName, "quit", "false");
-                    Sleep(2000);
-                    KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
-                  }
+                  if (event->State->View().GetString("orientation") == "vertical")
+                    CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, true);
                   else
-                    s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
-                }
-                if (event->State->View().ValueExists("reboot"))
-                {
-                  if (event->State->View().GetBool("reboot"))
-                  {
-                    s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
-                    Sleep(2000);
-                    // reboot the machine
-                    // disabled for testing on OSX
-                    // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
-                  }
-                  else
-                    s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
-                }
-//                  }
+                    CServiceBroker::GetSettingsComponent()->GetSettings()->SetBool(CSettings::MN_VERTICAL, false);
+                  CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
+                  s_changeShadowValue(shadowClient, strThingName, "orientation", event->State->View().GetString("orientation"));
+              }
+            }
+            if (event->State->View().ValueExists("playback"))
+            {
+              CNWClient* client = CNWClient::GetClient();
+              if (client->IsAuthorized())
+              {
+                if (event->State->View().GetString("playback") == "play")
+                  client->Startup(false, false);
+                else if (event->State->View().GetString("playback") == "stop")
+                  client->StopPlaying();
 
-//                  if (objectView.IsNull())
-//                  {
-//                      CLog::Log(LOGINFO,
-//                          "**MN** - CNWIoT::Process() - Delta reports that %s was deleted. Resetting defaults...\n",
-//                              strShadowProperty.c_str());
-//                      s_changeShadowValue(shadowClient, strThingName, strShadowProperty, SHADOW_VALUE_DEFAULT);
-//                  }
-//                  else
-//                  {
-//                      CLog::Log(LOGINFO,
-//                          "**MN** - CNWIoT::Process() - Delta reports that \"%s\" has a desired value of \"%s\", Changing local value...\n",
-//                              strShadowProperty.c_str(),
-//                          event->State->View().GetString(strShadowProperty).c_str());
-//                      s_changeShadowValue(
-//                          shadowClient, strThingName, strShadowProperty, event->State->View().GetString(strShadowProperty));
-//                  }
+                s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
+              }
+            }
+            if (event->State->View().ValueExists("quit"))
+            {
+              if (event->State->View().GetBool("quit"))
+              {
+                s_changeShadowValue(shadowClient, strThingName, "quit", "false");
+                Sleep(2000);
+                KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
               }
               else
+                s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+            }
+            if (event->State->View().ValueExists("reboot"))
+            {
+              if (event->State->View().GetBool("reboot"))
               {
-                  CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Delta did not report a change in \"%s\".\n", strShadowProperty.c_str());
+                s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
+                Sleep(2000);
+                // reboot the machine
+                // disabled for testing on OSX
+                // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
               }
+              else
+                s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
+            }
           }
+        }
 
-          if (ioErr)
-          {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error processing shadow delta: %s\n", ErrorDebugString(ioErr));
-          }
-      };
+        if (ioErr)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error processing shadow delta - onDeltaUpdated: %s\n", ErrorDebugString(ioErr));
+        }
+    };
 
-      auto onUpdateShadowAccepted = [&](Aws::Iotshadow::UpdateShadowResponse *response, int ioErr) {
-          if (ioErr == AWS_OP_SUCCESS)
-          {
-              CLog::Log(LOGINFO,
-                  "**MN** - CNWIoT::Process() - Finished updating reported shadow value to %s.\n",
-                  response->State->Reported->View().GetString(strShadowProperty).c_str());
-          }
-          else
-          {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on subscription: %s.\n", ErrorDebugString(ioErr));
-          }
-      };
+    auto onUpdateShadowAccepted = [&](Aws::Iotshadow::UpdateShadowResponse *response, int ioErr) {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on onUpdateShadowAccepted: %s.\n", ErrorDebugString(ioErr));
+        }
+    };
 
-      auto onUpdateShadowRejected = [&](Aws::Iotshadow::ErrorResponse *error, int ioErr) {
-          if (ioErr == AWS_OP_SUCCESS)
-          {
-              CLog::Log(LOGINFO,
-                  "**MN** - CNWIoT::Process() - Update of shadow state failed with message %s and code %d.",
-                  error->Message->c_str(),
-                  *error->Code);
-          }
-          else
-          {
-              CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on subscription: %s.\n", ErrorDebugString(ioErr));
-          }
-      };
+    auto onUpdateShadowRejected = [&](Aws::Iotshadow::ErrorResponse *error, int ioErr) {
+        if (ioErr == AWS_OP_SUCCESS)
+        {
+          CLog::Log(LOGINFO,
+                "**MN** - CNWIoT::Process() - Update of shadow state failed with message %s and code %d.",
+                error->Message->c_str(),
+                *error->Code);
+        }
+        else
+        {
+          CLog::Log(LOGINFO,  "**MN** - CNWIoT::Process() - Error on onUpdateShadowRejected: %s.\n", ErrorDebugString(ioErr));
+        }
+    };
 
-      Aws::Iotshadow::ShadowDeltaUpdatedSubscriptionRequest shadowDeltaUpdatedRequest;
-      shadowDeltaUpdatedRequest.ThingName = strThingName;
+    Aws::Iotshadow::ShadowDeltaUpdatedSubscriptionRequest shadowDeltaUpdatedRequest;
+    shadowDeltaUpdatedRequest.ThingName = strThingName;
 
-      shadowClient.SubscribeToShadowDeltaUpdatedEvents(
-          shadowDeltaUpdatedRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onDeltaUpdated, onDeltaUpdatedSubAck);
+    shadowClient.SubscribeToShadowDeltaUpdatedEvents(
+        shadowDeltaUpdatedRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, onDeltaUpdated, onDeltaUpdatedSubAck);
 
-      Aws::Iotshadow::UpdateShadowSubscriptionRequest updateShadowSubscriptionRequest;
-      updateShadowSubscriptionRequest.ThingName = strThingName;
+    Aws::Iotshadow::UpdateShadowSubscriptionRequest updateShadowSubscriptionRequest;
+    updateShadowSubscriptionRequest.ThingName = strThingName;
 
-      shadowClient.SubscribeToUpdateShadowAccepted(
-          updateShadowSubscriptionRequest,
-          AWS_MQTT_QOS_AT_LEAST_ONCE,
-          onUpdateShadowAccepted,
-          onDeltaUpdatedAcceptedSubAck);
+    shadowClient.SubscribeToUpdateShadowAccepted(
+        updateShadowSubscriptionRequest,
+        AWS_MQTT_QOS_AT_LEAST_ONCE,
+        onUpdateShadowAccepted,
+        onDeltaUpdatedAcceptedSubAck);
 
-      shadowClient.SubscribeToUpdateShadowRejected(
-          updateShadowSubscriptionRequest,
-          AWS_MQTT_QOS_AT_LEAST_ONCE,
-          onUpdateShadowRejected,
-          onDeltaUpdatedRejectedSubAck);
+    shadowClient.SubscribeToUpdateShadowRejected(
+        updateShadowSubscriptionRequest,
+        AWS_MQTT_QOS_AT_LEAST_ONCE,
+        onUpdateShadowRejected,
+        onDeltaUpdatedRejectedSubAck);
 
-      subscribeDeltaCompletedPromise.get_future().wait();
-      subscribeDeltaAcceptedCompletedPromise.get_future().wait();
-      subscribeDeltaRejectedCompletedPromise.get_future().wait();
-      // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
-      s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
-      s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
+    subscribeDeltaCompletedPromise.get_future().wait();
+    subscribeDeltaAcceptedCompletedPromise.get_future().wait();
+    subscribeDeltaRejectedCompletedPromise.get_future().wait();
 
-//      while (true)
-//      {
-//          CLog::Log(LOGINFO,  "Enter Desired state of %s:\n", strShadowProperty.c_str());
-//          String input;
-//          std::cin >> input;
-//
-//          if (input == "exit" || input == "quit")
-//          {
-//              CLog::Log(LOGINFO,  "Exiting...");
-//              break;
-//          }
-//
-//          s_changeShadowValue(shadowClient, strThingName, strShadowProperty, input);
-//      }
+    // report orientation, do not reset "desired" state
+    if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
+      s_changeShadowValue(shadowClient, strThingName, "orientation", "true", false);
+    else
+      s_changeShadowValue(shadowClient, strThingName, "orientation", "false", false);
+
+    // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
+    s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+    s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
   }
 
   while (!m_bStop)
