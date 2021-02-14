@@ -174,7 +174,8 @@ CNWIoT::CNWIoT()
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump provisioned %s %s", strProvisionedCrtPath, strProvisionedKeyPath);
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump private %s %s", strPrivatePath, strCertPath);
   std::string thingName = "MN_" + CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-  strThingName = thingName.c_str();
+  String aws_s(thingName.c_str(), thingName.size());
+  strThingName = aws_s;
   m_heartbeatTimer.StartZero();
 }
 
