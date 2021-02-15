@@ -48,6 +48,7 @@
 #include "utils/URIUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
+#include "utils/JSONVariantParser.h"
 
 #include "guilib/GUIKeyboardFactory.h"
 #include "guilib/GUIWindowManager.h"
@@ -66,6 +67,25 @@
 
 #include <string>
 #include <sstream>
+
+void Parse(int result[4], const std::string& input)
+{
+    std::istringstream parser(input);
+    parser >> result[0];
+    for(int idx = 1; idx < 4; idx++)
+    {
+        parser.get(); //Skip period
+        parser >> result[idx];
+    }
+}
+
+bool LessThanVersion(const std::string& a,const std::string& b)
+{
+    int parsedA[4], parsedB[4];
+    Parse(parsedA, a);
+    Parse(parsedB, b);
+    return std::lexicographical_compare(parsedA, parsedA + 4, parsedB, parsedB + 4);
+}
 
 template <typename T>
 static std::string std_to_string(T value)
@@ -363,6 +383,14 @@ void CNWClient::Process()
   #if ENABLE_NWCLIENT_DEBUGLOGS
   CLog::Log(LOGDEBUG, "**NW** - CNWClient::Process Started");
   #endif
+
+  /// check for update every 6 hours?? and check on every startup
+  if (!m_updateTimer.IsRunning() ||
+      (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f))
+  {
+    m_updateTimer.StartZero();
+    CNWClient::CheckUpdate();
+  }
 
   SendPlayerStatus(kTVAPI_Status_On);
 
@@ -1350,4 +1378,59 @@ bool CNWClient::AllowExit()
 //    return false;
 //  }
 //  return true;
+}
+
+bool CNWClient::CheckUpdate()
+{
+  std::string updateURL = "https://mrmc.tv/mrmc/build-deps/mnUpdate.json";
+  std::string updateFolder;
+  std::string tempPath = CSpecialProtocol::TranslatePath("special://temp/");
+#ifndef TARGET_DARWIN
+  updateFolder = "/storage/.update/";
+#else
+  updateFolder = CSpecialProtocol::TranslatePath("special://nwmn/downloads/");
+#endif
+
+  CURL url(updateURL);
+  XFILE::CCurlFile curl;
+  CVariant reply;
+  std::string strResponse;
+  std::string appVersion = CSysInfo::GetVersionShort();
+  if (curl.Get(url.Get(), strResponse))
+  {
+    if (!CJSONVariantParser::Parse(strResponse, reply))
+      return false;
+
+    std::string tarUrl         = reply["update"]["updateUrl"].asString();
+    std::string tarMD5         = reply["update"]["updateMd5"].asString();
+    unsigned int tarsize       = reply["update"]["updateSize"].asInteger();
+    std::string updateVersion  = reply["update"]["version"].asString();
+    bool        forceUpdate    = reply["update"]["forceUpdate"].asBoolean();
+
+    if (forceUpdate || LessThanVersion(appVersion, updateVersion))
+    {
+      // run update
+      std::string test1;
+      std::string tarTempLocal = URIUtils::AddFileToFolder(tempPath, URIUtils::GetFileName(tarUrl));
+      if (XFILE::CFile::Exists(tarTempLocal))
+        XFILE::CFile::Delete(tarTempLocal);
+
+      XFILE::CCurlFile http;
+      http.Download(tarUrl, tarTempLocal, &tarsize);
+      std::string localTarMD5 = CUtil::GetFileDigest(tarTempLocal, KODI::UTILITY::CDigest::Type::MD5);
+
+      if (StringUtils::EqualsNoCase(tarMD5, localTarMD5))
+      {
+        //
+        std::string tarLocal = URIUtils::AddFileToFolder(updateFolder, URIUtils::GetFileName(tarTempLocal));
+        XFILE::CFile::Copy(tarTempLocal, tarLocal);
+#ifndef TARGET_DARWIN
+        KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+#endif
+      }
+    }
+
+  }
+
+  return true;
 }

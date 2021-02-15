@@ -1008,6 +1008,16 @@ void CNWIoT::Process()
               else
                 s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
             }
+            if (event->State->View().ValueExists("forceFirmwareUpdate"))
+            {
+              if (event->State->View().GetBool("forceFirmwareUpdate"))
+              {
+                s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
+                CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - forceFirmwareUpdate");
+                CNWClient* client = CNWClient::GetClient();
+                client->CheckUpdate();
+              }
+            }
           }
         }
 

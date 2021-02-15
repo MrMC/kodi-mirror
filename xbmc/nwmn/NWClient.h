@@ -31,6 +31,7 @@
 #include "threads/CriticalSection.h"
 #include "dialogs/GUIDialogProgress.h"
 #include "utils/JobManager.h"
+#include "utils/Stopwatch.h"
 
 #define ENABLE_NWCLIENT_DEBUGLOGS 1
 
@@ -92,6 +93,7 @@ public:
   bool          DoAuthorize();
   bool          IsAuthorized();
   bool          AllowExit();
+  bool          CheckUpdate();
 
 protected:
   virtual void  Process();
@@ -142,4 +144,5 @@ protected:
 
   ClientCallBackFn m_ClientCallBackFn;
   const void      *m_ClientCallBackCtx;
+  CStopWatch      m_updateTimer;
 };
