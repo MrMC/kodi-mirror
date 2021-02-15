@@ -1001,7 +1001,7 @@ void CNWIoT::Process()
                 // reboot the machine
                 // disabled for testing on OSX
 #ifndef TARGET_DARWIN
-                KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+                system("/usr/bin/systemctl --no-block reboot");
 #endif
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
               }
