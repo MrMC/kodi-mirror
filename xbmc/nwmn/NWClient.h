@@ -145,4 +145,5 @@ protected:
   ClientCallBackFn m_ClientCallBackFn;
   const void      *m_ClientCallBackCtx;
   CStopWatch      m_updateTimer;
+  bool            m_updaterRunning;
 };

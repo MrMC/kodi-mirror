@@ -153,6 +153,7 @@ CNWClient::CNWClient()
  , m_PurgeManager(NULL)
  , m_ClientCallBackFn(NULL)
  , m_ClientCallBackCtx(NULL)
+ , m_updaterRunning(false)
 {
   CLog::Log(LOGDEBUG, "**NW** - NW version %f", kNWClient_PlayerFloatVersion);
 
@@ -385,8 +386,8 @@ void CNWClient::Process()
   #endif
 
   /// check for update every 6 hours?? and check on every startup
-  if (!m_updateTimer.IsRunning() ||
-      (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f))
+  if (!m_updaterRunning && (!m_updateTimer.IsRunning() ||
+      (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f)))
   {
     m_updateTimer.StartZero();
     CNWClient::CheckUpdate();
@@ -1382,6 +1383,7 @@ bool CNWClient::AllowExit()
 
 bool CNWClient::CheckUpdate()
 {
+  m_updaterRunning = true;
   std::string updateURL = "https://mrmc.tv/mrmc/build-deps/mnUpdate.json";
   std::string updateFolder;
   std::string tempPath = CSpecialProtocol::TranslatePath("special://temp/");
@@ -1431,6 +1433,6 @@ bool CNWClient::CheckUpdate()
     }
 
   }
-
+  m_updaterRunning = false;
   return true;
 }
