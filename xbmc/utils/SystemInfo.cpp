@@ -1229,7 +1229,7 @@ std::string CSysInfo::GetVersionShort()
   if (strlen(CCompileInfo::GetSuffix()) == 0)
     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
   else
-    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
+    return StringUtils::Format("%d.%d.%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
 }
 
 std::string CSysInfo::GetVersion()
