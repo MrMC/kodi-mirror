@@ -107,7 +107,7 @@ using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono;      // nanoseconds, system_clock, seconds
 //using namespace Aws::Iotshadow;
 
-static const char *SHADOW_STATUS_VALUE_DEFAULT = "offline";
+static const char *SHADOW_STATUS_VALUE_DEFAULT = "online";
 static const char *SHADOW_PLAYBACK_VALUE_DEFAULT = "stop";
 static const char *SHADOW_ORIENTATION_VALUE_DEFAULT = "horizontal";
 static const char *SHADOW_REBOOT_VALUE_DEFAULT = "false";
@@ -356,12 +356,16 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
         {
           // quit the app
           KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
+          CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Quit");
         }
         if (msgDetails.isMember("reboot") && msgDetails["reboot"].asBoolean())
         {
           // reboot the machine
-          // disabled for testing on OSX
-          // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+          // disabled on OSX
+#ifndef TARGET_DARWIN
+          KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+#endif
+          CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
         }
 
       }
@@ -959,6 +963,7 @@ void CNWIoT::Process()
                   CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
                   s_changeShadowValue(shadowClient, strThingName, "orientation", event->State->View().GetString("orientation"));
               }
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Orientation - %s", event->State->View().GetString("orientation"));
             }
             if (event->State->View().ValueExists("playback"))
             {
@@ -972,6 +977,7 @@ void CNWIoT::Process()
 
                 s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
               }
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Playback - %s", event->State->View().GetString("playback"));
             }
             if (event->State->View().ValueExists("quit"))
             {
@@ -980,6 +986,7 @@ void CNWIoT::Process()
                 s_changeShadowValue(shadowClient, strThingName, "quit", "false");
                 Sleep(2000);
                 KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
+                CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Quit");
               }
               else
                 s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
@@ -992,7 +999,10 @@ void CNWIoT::Process()
                 Sleep(2000);
                 // reboot the machine
                 // disabled for testing on OSX
-                // KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+#ifndef TARGET_DARWIN
+                KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+#endif
+                CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
               }
               else
                 s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
@@ -1054,9 +1064,9 @@ void CNWIoT::Process()
 
     // report orientation, do not reset "desired" state
     if (CServiceBroker::GetSettingsComponent()->GetSettings()->GetBool(CSettings::MN_VERTICAL))
-      s_changeShadowValue(shadowClient, strThingName, "orientation", "true", false);
+      s_changeShadowValue(shadowClient, strThingName, "orientation", "vertical", false);
     else
-      s_changeShadowValue(shadowClient, strThingName, "orientation", "false", false);
+      s_changeShadowValue(shadowClient, strThingName, "orientation", SHADOW_ORIENTATION_VALUE_DEFAULT, false);
 
     // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
     s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
@@ -1068,7 +1078,7 @@ void CNWIoT::Process()
     /// report online status every 10000ms (10sec)
     if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 10000.0f)
     {
-      s_changeShadowValue(shadowClient, strThingName, "status", "online");
+      s_changeShadowValue(shadowClient, strThingName, "status", SHADOW_STATUS_VALUE_DEFAULT);
       m_heartbeatTimer.StartZero();
     }
 
