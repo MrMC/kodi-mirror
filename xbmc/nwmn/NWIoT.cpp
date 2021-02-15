@@ -1118,10 +1118,12 @@ void CNWIoT::Process()
     }
     std::string test;
   }
-  std::promise<void> unsubscribeFinishedPromise;
-  connection->Unsubscribe(
-      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
-  //  unsubscribeFinishedPromise.get_future().wait();
+
+// enable if we subscribe to listen to a topic
+//  std::promise<void> unsubscribeFinishedPromise;
+//  connection->Unsubscribe(
+//      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
+//  unsubscribeFinishedPromise.get_future().wait();
 
   /* Disconnect */
   if (connection->Disconnect())
