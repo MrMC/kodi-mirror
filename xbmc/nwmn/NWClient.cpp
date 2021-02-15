@@ -1428,7 +1428,7 @@ bool CNWClient::CheckUpdate()
       {
         //
         std::string tarLocal = URIUtils::AddFileToFolder(updateFolder, URIUtils::GetFileName(tarTempLocal));
-        XFILE::CFile::Copy(tarTempLocal, tarLocal);
+        XFILE::CFile::Rename(tarTempLocal, tarLocal);
         CLog::Log(LOGINFO, "**NW** - CNWClient::CheckUpdate() Rebooting...");
 #ifndef TARGET_DARWIN
         system("/usr/bin/systemctl --no-block reboot");
