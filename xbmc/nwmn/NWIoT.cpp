@@ -275,6 +275,7 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
     {
       CVariant payloadObject;
       payloadObject["details"]["assetID"] = data["assetID"].asString();
+      payloadObject["details"]["raw"] = data["payload"].asString();
       notifyEvent("assetDownloaded", payloadObject);
     }
   }

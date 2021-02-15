@@ -918,6 +918,15 @@ void CNWClient::LogFilesDownLoaded(std::string assetID,std::string assetFormat)
   file.Seek(0, SEEK_END);
   file.Write(strData.c_str(), strData.size());
   file.Close();
+
+  // send it to IoT as well
+  CVariant data(CVariant::VariantTypeObject);
+  data["end"] = false;
+
+  data["assetID"] = assetID;
+  data["format"] = assetFormat;
+  data["payload"] = strData;
+  CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "MNassetDownloaded", data);
 }
 
 void CNWClient::UpdateNetworkStatus()
