@@ -2,8 +2,8 @@ APP_NAME MemberNetTVUltra
 APP_PACKAGE org.nationwidegroup.membernettv
 COMPANY_NAME Nationwide Marketing Group, LLC
 WEBSITE http://www.nationwidegroup.org/
-VERSION_MAJOR 3
+VERSION_MAJOR 5
 VERSION_MINOR 0
-VERSION_TAG ALPHA1
+VERSION_TAG 1
 VERSION_CODE 18.9.701
 ADDON_API 18.9.701
