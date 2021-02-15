@@ -1411,8 +1411,10 @@ bool CNWClient::CheckUpdate()
 
     if (forceUpdate || LessThanVersion(appVersion, updateVersion))
     {
+      m_dlgProgress->SetLine(0, StringUtils::Format("Downloading firmware update"));
+      m_dlgProgress->SetLine(1, StringUtils::Format("Please wait..."));
+      CLog::Log(LOGINFO, "**NW** - CNWClient::CheckUpdate() Update needed, Current OS version '%s' - update version '%s', forceUpdate = %s",appVersion, updateVersion, forceUpdate ? "true":"false");
       // run update
-      std::string test1;
       std::string tarTempLocal = URIUtils::AddFileToFolder(tempPath, URIUtils::GetFileName(tarUrl));
       if (XFILE::CFile::Exists(tarTempLocal))
         XFILE::CFile::Delete(tarTempLocal);
@@ -1420,14 +1422,16 @@ bool CNWClient::CheckUpdate()
       XFILE::CCurlFile http;
       http.Download(tarUrl, tarTempLocal, &tarsize);
       std::string localTarMD5 = CUtil::GetFileDigest(tarTempLocal, KODI::UTILITY::CDigest::Type::MD5);
+      CLog::Log(LOGINFO, "**NW** - CNWClient::CheckUpdate() downloaded update tar MD5(%s)", localTarMD5);
 
       if (StringUtils::EqualsNoCase(tarMD5, localTarMD5))
       {
         //
         std::string tarLocal = URIUtils::AddFileToFolder(updateFolder, URIUtils::GetFileName(tarTempLocal));
         XFILE::CFile::Copy(tarTempLocal, tarLocal);
+        CLog::Log(LOGINFO, "**NW** - CNWClient::CheckUpdate() Rebooting...");
 #ifndef TARGET_DARWIN
-        KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+        system("/usr/bin/systemctl --no-block reboot");
 #endif
       }
     }
