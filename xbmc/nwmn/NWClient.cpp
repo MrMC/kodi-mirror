@@ -1384,7 +1384,7 @@ bool CNWClient::AllowExit()
 bool CNWClient::CheckUpdate()
 {
   m_updaterRunning = true;
-  std::string updateURL = "https://mrmc.tv/mrmc/build-deps/mnUpdate.json";
+  std::string updateURL = "https://cdn.iot-dev.envoi.cloud/json/update.json";
   std::string updateFolder;
   std::string tempPath = CSpecialProtocol::TranslatePath("special://temp/");
 #ifndef TARGET_DARWIN
