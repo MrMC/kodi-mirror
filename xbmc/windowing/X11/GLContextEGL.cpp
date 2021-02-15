@@ -467,7 +467,7 @@ void CGLContextEGL::SwapBuffers()
       if (lastIncrement > m_sync.interval)
       {
         lastIncrement = m_sync.interval;
-        CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval");
+        //CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval");
       }
       uint64_t sleeptime = m_sync.interval - lastIncrement;
       usleep(sleeptime);
@@ -484,7 +484,7 @@ void CGLContextEGL::SwapBuffers()
     if (lastIncrement > m_sync.interval)
     {
       lastIncrement = m_sync.interval;
-      CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval (1)");
+      //CLog::Log(LOGWARNING, "CGLContextEGL::SwapBuffers: last msc time greater than interval (1)");
     }
     uint64_t sleeptime = m_sync.interval - lastIncrement;
     usleep(sleeptime);
