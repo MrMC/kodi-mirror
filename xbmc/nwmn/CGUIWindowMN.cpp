@@ -42,6 +42,7 @@
 #include "settings/SettingsComponent.h"
 #include "guilib/GUIComponent.h"
 #include "interfaces/AnnouncementManager.h"
+#include "utils/SystemInfo.h"
 
 
 
@@ -115,7 +116,7 @@ bool CGUIWindowMN::OnMessage(CGUIMessage& message)
 //      SET_CONTROL_LABEL(90213, StringUtils::Format("Machine ID: %s",
 //                                                   settings.strMachine_id.c_str()));
       SET_CONTROL_LABEL(90214, StringUtils::Format("MNTV Software Version: %s",
-                                                   playerInfo.software_version.c_str()));
+                                                   CSysInfo::GetVersionShort().c_str()));
       SET_CONTROL_LABEL(90215, StringUtils::Format("IP Address:  %s",
                                                    strIPAddress.c_str()));
       SET_CONTROL_LABEL(90216, StringUtils::Format("Ethernet MAC: %s",
