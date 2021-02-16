@@ -983,7 +983,7 @@ void CNWIoT::Process()
             }
             if (event->State->View().ValueExists("quit"))
             {
-              if (event->State->View().GetBool("quit"))
+              if (event->State->View().GetString("quit")  == "true")
               {
                 s_changeShadowValue(shadowClient, strThingName, "quit", "false");
                 Sleep(2000);
@@ -995,7 +995,7 @@ void CNWIoT::Process()
             }
             if (event->State->View().ValueExists("reboot"))
             {
-              if (event->State->View().GetBool("reboot"))
+              if (event->State->View().GetString("reboot") == "true")
               {
                 s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
                 Sleep(2000);
@@ -1011,13 +1011,15 @@ void CNWIoT::Process()
             }
             if (event->State->View().ValueExists("forceFirmwareUpdate"))
             {
-              if (event->State->View().GetBool("forceFirmwareUpdate"))
+              if (event->State->View().GetString("forceFirmwareUpdate") == "true")
               {
                 s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - forceFirmwareUpdate");
                 CNWClient* client = CNWClient::GetClient();
                 client->CheckUpdate();
               }
+              else
+                s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
             }
           }
         }
