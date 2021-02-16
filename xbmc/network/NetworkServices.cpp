@@ -575,6 +575,7 @@ void CNetworkServices::Stop(bool bWait)
   StopJSONRPCServer(bWait);
   StopAirPlayServer(bWait);
   StopAirTunesServer(bWait);
+  StopIoT();
 }
 
 bool CNetworkServices::StartWebserver()
@@ -777,6 +778,12 @@ bool CNetworkServices::StartIoT()
   // init IoT listener
   CNWIoT *iot = new CNWIoT;
   iot->Listen();
+  return true;
+}
+
+bool CNetworkServices::StopIoT()
+{
+  CNWIoT::GetInstance().StopThread();
   return true;
 }
 

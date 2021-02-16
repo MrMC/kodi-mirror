@@ -185,6 +185,17 @@ CNWIoT::~CNWIoT()
   StopThread();
 }
 
+void CNWIoT::StopIoT()
+{
+  StopThread(true);
+}
+
+CNWIoT& CNWIoT::GetInstance()
+{
+  static CNWIoT IoT;
+  return IoT;
+}
+
 void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &sender, const std::string &message, const CVariant &data)
 {
   if (sender != "xbmc")
@@ -998,6 +1009,7 @@ void CNWIoT::Process()
               if (event->State->View().GetString("reboot") == "true")
               {
                 s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
+                StopThread();
                 Sleep(2000);
                 // reboot the machine
                 // disabled for testing on OSX
@@ -1128,11 +1140,13 @@ void CNWIoT::Process()
 //      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
 //  unsubscribeFinishedPromise.get_future().wait();
 
+
   /* Disconnect */
   if (connection->Disconnect())
   {
       connectionClosedPromise.get_future().wait();
   }
+  CLog::Log(LOGDEBUG, "**NW** - CNWIoT::Process Stopped");
 
 }
 

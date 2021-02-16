@@ -41,6 +41,8 @@ public:
   CNWIoT();
   ~CNWIoT();
 
+  void StopIoT();
+  static CNWIoT& GetInstance();
   void Announce(ANNOUNCEMENT::AnnouncementFlag flag,
                 const std::string& sender,
                 const std::string& message,
