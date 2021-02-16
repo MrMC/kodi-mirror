@@ -42,7 +42,7 @@
 #include "utils/log.h"
 //#include "utils/TimeUtils.h"
 //#include "utils/StringUtils.h"
-//#include "utils/SystemInfo.h"
+#include "utils/SystemInfo.h"
 #include "utils/URIUtils.h"
 //#include "utils/XBMCTinyXML.h"
 //#include "utils/XMLUtils.h"
@@ -164,7 +164,7 @@ static void s_changeShadowValue(
 CNWIoT::CNWIoT()
 : CThread("CNWIoT")
 {
-  CLog::Log(LOGDEBUG, "**NW** - NW version %f", kNWClient_PlayerFloatVersion);
+  CLog::Log(LOGDEBUG, "**NW** - NW version %s", CSysInfo::GetVersionShort());
   CServiceBroker::GetAnnouncementManager()->AddAnnouncer(this);
   strProvisionedKeyPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "private.pem.key");
   strProvisionedCrtPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "certificate.pem.crt");
@@ -759,7 +759,8 @@ void CNWIoT::Process()
             connectionCompletedPromise.set_value(true);
             connected = true;
             CVariant payloadObject;
-            payloadObject["details"] = "";
+//            payloadObject["details"] = "";
+            payloadObject["details"]["mnversion"] = CSysInfo::GetVersionShort();
             notifyEvent("deviceConnected", payloadObject);
           }
       }
