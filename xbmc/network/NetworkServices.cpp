@@ -782,7 +782,7 @@ bool CNetworkServices::StartIoT()
 
 bool CNetworkServices::StopIoT()
 {
-  CNWIoT::GetInstance().StopThread();
+  CNWIoT::GetInstance().StopIoT();
   return true;
 }
 

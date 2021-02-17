@@ -187,7 +187,8 @@ CNWIoT::~CNWIoT()
 
 void CNWIoT::StopIoT()
 {
-  StopThread(true);
+  m_bStop = true;
+  StopThread();
 }
 
 CNWIoT& CNWIoT::GetInstance()
@@ -674,6 +675,8 @@ bool CNWIoT::DoAuthorize()
     registerRejectedCompletedPromise.get_future().wait();
   }
   /* Disconnect */
+  CLog::Log(LOGDEBUG, "**NW** - 1-connection->Disconnect()");
+
   if (connection->Disconnect())
   {
       connectionClosedPromise.get_future().wait();
@@ -733,9 +736,9 @@ void CNWIoT::Listen()
 void CNWIoT::Process()
 {
   SetPriority(THREAD_PRIORITY_NORMAL);
-  #if ENABLE_NWIOT_DEBUGLOGS
+  //#if ENABLE_NWIOT_DEBUGLOGS
   CLog::Log(LOGDEBUG, "**NW** - CNWIoT::Process Started");
-  #endif
+  //#endif
   ApiHandle apiHandle;
   apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
 
@@ -793,7 +796,7 @@ void CNWIoT::Process()
   auto onDisconnect = [&](Mqtt::MqttConnection &) {
       {
         CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Disconnect completed");
-          connectionClosedPromise.set_value();
+        connectionClosedPromise.set_value();
         connected = false;
       }
   };
@@ -852,7 +855,7 @@ void CNWIoT::Process()
 
   if (!*connection)
   {
-    CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Process() - Failed to create client");
+    CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Failed to create client");
     return;
   }
 
@@ -860,7 +863,6 @@ void CNWIoT::Process()
   connection->OnDisconnect = std::move(onDisconnect);
   connection->OnConnectionInterrupted = std::move(onInterrupted);
   connection->OnConnectionResumed = std::move(onResumed);
-
 
   while (!m_bStop && !connected)
   {
@@ -1110,44 +1112,47 @@ void CNWIoT::Process()
 
     if (!m_payload.empty())
     {
+      std::promise<void> publishCompletedPromise;
       ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)m_payload.c_str(), m_payload.length());
       ByteBuf *payloadPtr = &payload;
 
-      // set payload to "" so we dont go in here until
+      // reset payload to "" so we dont go in here until
       // new msg has been set by announcer
       CNWIoT::setPayload("");
-      auto onPublishComplete = [payloadPtr](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
+      auto onPublishComplete = [&](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
       {
-          aws_byte_buf_clean_up(payloadPtr);
+        aws_byte_buf_clean_up(payloadPtr);
 
-          if (packetId)
-          {
-            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
-          }
-          else
-          {
-            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
-          }
+        if (packetId)
+        {
+          CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
+        }
+        else
+        {
+          CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
+        }
+        publishCompletedPromise.set_value();
       };
       connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+      publishCompletedPromise.get_future().wait();
     }
-    std::string test;
+    Sleep(1);
   }
 
-// enable if we subscribe to listen to a topic
-//  std::promise<void> unsubscribeFinishedPromise;
-//  connection->Unsubscribe(
-//      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
-//  unsubscribeFinishedPromise.get_future().wait();
-
+  // enable if we subscribe to listen to a topic
+  //  std::promise<void> unsubscribeFinishedPromise;
+  //  connection->Unsubscribe(
+  //      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
+  //  unsubscribeFinishedPromise.get_future().wait();
 
   /* Disconnect */
+  CLog::Log(LOGINFO, "**NW** - connection->Disconnect()");
   if (connection->Disconnect())
   {
-      connectionClosedPromise.get_future().wait();
+    connectionClosedPromise.get_future().wait();
   }
-  CLog::Log(LOGDEBUG, "**NW** - CNWIoT::Process Stopped");
 
+  CLog::Log(LOGINFO, "**NW** - CNWIoT::Process Stopped");
 }
 
 void CNWIoT::setPayload(std::string payload)

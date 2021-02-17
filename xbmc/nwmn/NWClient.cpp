@@ -1431,7 +1431,7 @@ bool CNWClient::CheckUpdate()
         XFILE::CFile::Rename(tarTempLocal, tarLocal);
         CLog::Log(LOGINFO, "**NW** - CNWClient::CheckUpdate() Rebooting...");
 #ifndef TARGET_DARWIN
-        system("/usr/bin/systemctl --no-block reboot");
+        system("/usr/bin/systemctl reboot");
 #endif
       }
     }
