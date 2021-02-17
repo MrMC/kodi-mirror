@@ -953,10 +953,6 @@ bool CApplication::Initialize()
     CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
   }
 
-//  // init IoT listener
-//  CNWIoT *iot = new CNWIoT;
-//  iot->Listen();
-
   return true;
 }
 

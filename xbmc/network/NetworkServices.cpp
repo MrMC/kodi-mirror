@@ -775,9 +775,8 @@ bool CNetworkServices::StopAirTunesServer(bool bWait)
 
 bool CNetworkServices::StartIoT()
 {
-  // init IoT listener
-  CNWIoT *iot = new CNWIoT;
-  iot->Listen();
+  // init IoT and setup listener
+  CNWIoT::GetInstance().Listen();
   return true;
 }
 
