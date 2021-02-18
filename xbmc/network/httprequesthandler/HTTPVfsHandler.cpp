@@ -33,7 +33,7 @@ CHTTPVfsHandler::CHTTPVfsHandler(const HTTPRequest &request)
     if (XFILE::CFile::Exists(file))
     {
       bool accessible = false;
-      if (file.substr(0, 8) == "image://" || StringUtils::StartsWithNoCase(file, "special://logpath/membernettvultra."))
+      if (file.substr(0, 8) == "image://" || StringUtils::StartsWithNoCase(file, "special://logpath/"))
         accessible = true;
       else
       {

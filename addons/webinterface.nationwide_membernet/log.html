@@ -6,7 +6,17 @@
   }
   function updateIframe (iframeName)
   {
-    window.frames[iframeName].location = "vfs%2Fspecial%3A%2F%2Flogpath%2Fmembernettvultra.log" + "?r=" +randomIntFromInterval(7,1457890);
+    var result,logUrl;
+    xbmc.rpc.request({
+      'method': 'MN.GetLogLocation',
+      'success': function(data) {
+        if (data && data.result) {
+           var pathToFile = "vfs%2Fspecial%3A%2F%2Flogpath%2F" + data.result["log"] + "?r=" +randomIntFromInterval(7,1457890);
+           window.frames[iframeName].location = pathToFile;
+          // window.frames[iframeName].location = "vfs%2Fspecial%3A%2F%2Flogpath%2Fmembernettvultra.log" + "?r=" +randomIntFromInterval(7,1457890);
+          }
+        }
+      });            
   }
   function resizeIframe(obj) {
     var html = document.documentElement;
@@ -106,9 +116,9 @@
         <div class="content">
             <div id="list">
               <p>
+                <button name="Generate" value="Generate" OnClick="updateIframe ('log')">Generate Log</button>
                 <button name="Copy" value="Copy" OnClick="DoCopy('log')">Copy Log Content</button>
                 <iframe name="log" src="" onload="resizeIframe(this)" width="95%"></iframe></p>
-                <script>updateIframe ("log");</script>
                 
             </div>
         </div> <!-- /content -->

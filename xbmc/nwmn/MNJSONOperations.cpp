@@ -21,6 +21,7 @@
 
 #include "NWClient.h"
 
+#include "CompileInfo.h"
 #include "utils/Variant.h"
 #include "interfaces/json-rpc/JSONRPCUtils.h"
 #include "utils/JSONVariantWriter.h"
@@ -122,3 +123,12 @@ JSONRPC_STATUS CMNJSONOperations::DumpLogcat(const std::string &method, ITranspo
   return OK;
 }
 
+JSONRPC_STATUS CMNJSONOperations::GetLogLocation(const std::string &method, ITransportLayer *transport, IClient *client, const CVariant &parameterObject, CVariant &result)
+{
+//  std::string somestr = g_sysinfo.SaveSystemLog();
+  std::string lowerAppName = CCompileInfo::GetAppName();
+  StringUtils::ToLower(lowerAppName);
+  result["log"] = lowerAppName + ".log";
+  result["logold"] = lowerAppName + ".old.log";
+  return OK;
+}

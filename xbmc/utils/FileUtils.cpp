@@ -131,7 +131,7 @@ bool CFileUtils::RemoteAccessAllowed(const std::string &strPath)
     return true;
   else if (StringUtils::StartsWithNoCase(realPath, "plugin://"))
     return true;
-  else if (StringUtils::StartsWithNoCase(realPath, "special://logpath/membernettvultra"))
+  else if (StringUtils::StartsWithNoCase(realPath, "special://logpath"))
     return true;
   else
   {

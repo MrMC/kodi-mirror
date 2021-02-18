@@ -12,9 +12,19 @@
   {
       return Math.floor(Math.random()*(max-min+1)+min);
   }
-  function updateIframe (iframeName)
+    function updateIframe (iframeName)
   {
-    window.frames[iframeName].location = "vfs%2Fspecial%3A%2F%2Flogpath%2Fmembernettvultra.old.log" + "?r=" +randomIntFromInterval(7,1457890);
+    var result,logUrl;
+    xbmc.rpc.request({
+      'method': 'MN.GetLogLocation',
+      'success': function(data) {
+        if (data && data.result) {
+           var pathToFile = "vfs%2Fspecial%3A%2F%2Flogpath%2F" + data.result["logold"] + "?r=" +randomIntFromInterval(7,1457890);
+           window.frames[iframeName].location = pathToFile;
+          // window.frames[iframeName].location = "vfs%2Fspecial%3A%2F%2Flogpath%2Fmembernettvultra.log" + "?r=" +randomIntFromInterval(7,1457890);
+          }
+        }
+      });            
   }
   function DoCopy (iframeName)
   {
@@ -107,9 +117,10 @@
         <div class="content">
             <div id="list">
               <p>
+                <button name="Generate" value="Generate" OnClick="updateIframe ('logold')">Generate Log Old</button>
                 <button name="Copy" value="Copy" OnClick="DoCopy('logold')">Copy Old Log Content</button>
                 <iframe name="logold" src="" onload="resizeIframe(this)" width="95%"></iframe>
-                <script>updateIframe ("logold");</script>
+                <!-- <script>updateIframe ("logold");</script> -->
               </p>
             </div>
         </div> <!-- /content -->
