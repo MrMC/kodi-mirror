@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="skin.nationwide" version="0.0.5" name="Blank" provider-name="dream-team">
+<addon id="skin.nationwide" version="0.0.6" name="Blank" provider-name="dream-team">
   <requires>
     <import addon="xbmc.gui" version="4.0.0"/>
   </requires>

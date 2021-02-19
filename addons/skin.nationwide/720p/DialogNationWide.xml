@@ -21,8 +21,8 @@
 				 <control type="label">
 			        <posx>103</posx>
 			        <posy>25</posy>
-			        <width max="306">auto</width>
-			        <align>center</align>
+			        <width max="430">auto</width>
+			        <align>left</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
 			        <label>View specific content for[CR]product demos.</label>
@@ -46,11 +46,11 @@
 				<control type="label">
 			        <posx>487</posx>
 			        <posy>25</posy>
-			        <width max="306">auto</width>
-			        <align>center</align>
+			        <width max="430">auto</width>
+			        <align>left</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
-			        <label>This will play the playlist[CR]created on nationwides[CR]membernet website.</label>
+			        <label>This will play the playlist[CR]created through the content[CR]management web app.</label>
 			        <font>HomeScreen33</font>
 			        <textcolor>white</textcolor>
 			        <shadowcolor>black</shadowcolor>
@@ -71,8 +71,8 @@
 				<control type="label">
 			        <posx>871</posx>
 			        <posy>25</posy>
-			        <width max="306">auto</width>
-			        <align>center</align>
+			        <width max="430">auto</width>
+			        <align>left</align>
 			        <aligny>center</aligny>
 			        <scroll>false</scroll>
 			        <label>Setup your internet[CR]connection, screen format,[CR]and more.</label>
