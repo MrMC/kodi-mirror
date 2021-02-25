@@ -1033,7 +1033,7 @@ void CNWIoT::Process()
                 // reboot the machine
                 // disabled for testing on OSX
 #ifndef TARGET_DARWIN
-                system("/usr/bin/systemctl --no-block reboot");
+                system("/usr/bin/systemctl reboot");
 #endif
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
               }
