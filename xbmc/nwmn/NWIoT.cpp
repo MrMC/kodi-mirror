@@ -1118,8 +1118,10 @@ void CNWIoT::Process()
     s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
   }
 
-  while (!m_bStop && CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+  while (!m_bStop)
   {
+    if (!CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+      continue;
     /// report online status every 10000ms (10sec)
     if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 10000.0f)
     {
