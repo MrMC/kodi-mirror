@@ -56,9 +56,9 @@ public:
 
 protected:
   void Process() override;
-  static CCriticalSection m_payloadLock;
-  std::string   m_payload;
-  CStopWatch m_heartbeatTimer;
+  static CCriticalSection    m_payloadLock;
+  std::vector<std::string>   m_payload;
+  CStopWatch                 m_heartbeatTimer;
 
 };
 

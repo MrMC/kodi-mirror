@@ -173,9 +173,6 @@ CNWIoT::CNWIoT()
   strCAPath = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "root-CA.crt");
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump provisioned %s %s", strProvisionedCrtPath, strProvisionedKeyPath);
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump private %s %s", strPrivatePath, strCertPath);
-  std::string thingName = "MN_" + CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
-  String aws_s(thingName.c_str(), thingName.size());
-  strThingName = aws_s;
   m_heartbeatTimer.StartZero();
 }
 
@@ -717,20 +714,21 @@ bool CNWIoT::IsAuthorized()
 
 void CNWIoT::Listen()
 {
-  bool didAuthorise = false;
-  if (!IsAuthorized())
-    didAuthorise = DoAuthorize();
-  else
-    didAuthorise = true;
-
-  if (didAuthorise)
-  {
-    Create();
-  }
-  else
-  {
-    CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Listen() - Failed to 'DoAuthorize()' ");
-  }
+  Create();
+//  bool didAuthorise = false;
+//  if (!IsAuthorized())
+//    didAuthorise = DoAuthorize();
+//  else
+//    didAuthorise = true;
+//
+//  if (didAuthorise)
+//  {
+//    Create();
+//  }
+//  else
+//  {
+//    CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Listen() - Failed to 'DoAuthorize()' ");
+//  }
 }
 
 void CNWIoT::Process()
@@ -742,7 +740,26 @@ void CNWIoT::Process()
   ApiHandle apiHandle;
   apiHandle.InitializeLogging(Aws::Crt::LogLevel::None, stderr);
 
+
+  while (!CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+  {
+    CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - No Network device attached.... waiting");
+    Sleep(1000);
+  }
+
+  while (!IsAuthorized())
+  {
+    DoAuthorize();
+    Sleep(5000);
+  }
+
+  CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Process() - Completed 'DoAuthorize()' ");
+
   std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  std::string thingName = "MN_" + playerMACAddress;
+  String aws_s(thingName.c_str(), thingName.size());
+  strThingName = aws_s;
+
   std::string strTopic = "dt/envoi/events/MN_" + playerMACAddress;
   String topic(strTopic.c_str());
   String clientId(playerMACAddress.c_str());
@@ -1101,7 +1118,7 @@ void CNWIoT::Process()
     s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
   }
 
-  while (!m_bStop)
+  while (!m_bStop && CServiceBroker::GetNetwork().GetFirstConnectedInterface())
   {
     /// report online status every 10000ms (10sec)
     if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 10000.0f)
@@ -1110,33 +1127,40 @@ void CNWIoT::Process()
       m_heartbeatTimer.StartZero();
     }
 
-    if (!m_payload.empty())
+    if (m_payload.size() > 0)
     {
-      std::promise<void> publishCompletedPromise;
-      ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)m_payload.c_str(), m_payload.length());
-      ByteBuf *payloadPtr = &payload;
-
-      // reset payload to "" so we dont go in here until
-      // new msg has been set by announcer
-      CNWIoT::setPayload("");
-      auto onPublishComplete = [&](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
+      CSingleLock lock(m_payloadLock);
+      for (int i = 0; i < m_payload.size(); i++)
       {
-        aws_byte_buf_clean_up(payloadPtr);
+        std::string msg = m_payload[i];
+        std::promise<void> publishCompletedPromise;
+        ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)msg.c_str(), msg.length());
+        ByteBuf *payloadPtr = &payload;
 
-        if (packetId)
+//        // reset payload to "" so we dont go in here until
+//        // new msg has been set by announcer
+//        CNWIoT::setPayload("");
+        auto onPublishComplete = [&](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
         {
-          CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
-        }
-        else
-        {
-          CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
-        }
-        publishCompletedPromise.set_value();
-      };
-      connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
-      publishCompletedPromise.get_future().wait();
+          aws_byte_buf_clean_up(payloadPtr);
+
+          if (packetId)
+          {
+            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
+          }
+          else
+          {
+            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
+          }
+          publishCompletedPromise.set_value();
+        };
+        connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+        publishCompletedPromise.get_future().wait();
+
+        Sleep(1);
+      }
+      m_payload.clear();
     }
-    Sleep(1);
   }
 
   // enable if we subscribe to listen to a topic
@@ -1158,14 +1182,16 @@ void CNWIoT::Process()
 void CNWIoT::setPayload(std::string payload)
 {
   CSingleLock lock(m_payloadLock);
-  m_payload = payload;
+  m_payload.push_back(payload);
 }
 
 void CNWIoT::notifyEvent(std::string type, CVariant details)
 {
   CVariant payloadObject;
   CDateTime time = CDateTime::GetCurrentDateTime();
-  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  std::string playerMACAddress = "NA";
+  if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+    playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   payloadObject["machineId"] = playerMACAddress;
   payloadObject["type"] = type;
   payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
