@@ -448,6 +448,7 @@ const std::string CSettings::MN_URL = "mn.url_feed";
 const std::string CSettings::MN_MACHINE_ID = "mn.machine_id";
 const std::string CSettings::MN_LOCATION_ID = "mn.location_id";
 const std::string CSettings::MN_VERTICAL = "mn.vertical";
+const std::string CSettings::MN_API_VERSION = "mn.apiversion";
 
 bool CSettings::Initialize()
 {

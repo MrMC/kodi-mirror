@@ -822,7 +822,12 @@
           <level>0</level>
           <default>false</default>
           <control type="toggle" />
-        </setting>       
+        </setting>
+        <setting id="mn.apiversion" type="integer" label="20026" help="36115">
+          <level>0</level>
+          <default>2</default>
+          <control type="toggle" />
+        </setting>      
       </group>
     </category>
     <category id="filelists" label="16000" help="36121">

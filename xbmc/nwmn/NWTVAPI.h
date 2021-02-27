@@ -350,3 +350,7 @@ bool TVAPI_ReportFilesDownloaded(TVAPI_Files &files);
 // actions
 bool TVAPI_GetActionQueue(TVAPI_Actions &actions);
 bool TVAPI_UpdateActionStatus(TVAPI_ActionStatus &actionStatus);
+
+int  TVAPI_GetApiVersion();
+void TVAPI_SetApiVersion(int version);
+

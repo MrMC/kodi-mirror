@@ -1440,3 +1440,16 @@ bool CNWClient::CheckUpdate()
   m_updaterRunning = false;
   return true;
 }
+
+void CNWClient::SetApiVersion(int version)
+{
+  TVAPI_SetApiVersion(version);
+  CLog::Log(LOGINFO, "**NW** - CNWClient::SetApiVersion(...) ApiVersion set to %i...",version);
+}
+
+int CNWClient::GetApiVersion()
+{
+  int version = TVAPI_GetApiVersion();
+  CLog::Log(LOGINFO, "**NW** - GetApiVersion() ApiVersion is %i...",version);
+  return version;
+}

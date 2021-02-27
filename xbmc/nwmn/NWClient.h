@@ -94,6 +94,8 @@ public:
   bool          IsAuthorized();
   bool          AllowExit();
   bool          CheckUpdate();
+  void          SetApiVersion(int version);
+  int           GetApiVersion();
 
 protected:
   virtual void  Process();

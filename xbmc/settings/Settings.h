@@ -420,6 +420,7 @@ public:
   static const std::string MN_MACHINE_ID;
   static const std::string MN_LOCATION_ID;
   static const std::string MN_VERTICAL;
+  static const std::string MN_API_VERSION;
 
   /*!
    \brief Creates a new settings wrapper around a new settings manager.

@@ -29,6 +29,10 @@
 #include "utils/Variant.h"
 #include "utils/URIUtils.h"
 #include "utils/log.h"
+#include "settings/Settings.h"
+#include "settings/SettingsComponent.h"
+#include "ServiceBroker.h"
+#include "network/Network.h"
 
 
 #include <string>
@@ -65,6 +69,10 @@ void TVAPI_SetURLBASE(std::string urlbase)
   TVAPI_URLBASE = urlbase;
   CLog::Log(LOGDEBUG, "TVAPI_SetURLBASE %s", TVAPI_URLBASE.c_str());
 }
+
+// used in v2 and translation into v3
+// TVAPI_Machine, TVAPI_PlaylistFile, TVAPI_PlaylistItem, TVAPI_PlaylistItems, TVAPI_Playlist
+
 
 bool TVAPI_DoActivate(TVAPI_Activate &activate)
 {
@@ -748,4 +756,15 @@ bool TVAPI_UpdateActionStatus(TVAPI_ActionStatus &actionStatus)
     return true;
   }
   return false;
+}
+
+int TVAPI_GetApiVersion()
+{
+  return CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(CSettings::MN_API_VERSION);
+}
+
+void TVAPI_SetApiVersion(int version)
+{
+  CServiceBroker::GetSettingsComponent()->GetSettings()->SetInt(CSettings::MN_API_VERSION, version);
+  CServiceBroker::GetSettingsComponent()->GetSettings()->Save();
 }

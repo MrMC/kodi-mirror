@@ -161,6 +161,43 @@ static void s_changeShadowValue(
     client.PublishUpdateShadow(updateShadowRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, std::move(publishCompleted));
 }
 
+static void i_changeShadowValue(
+    Aws::Iotshadow::IotShadowClient &client,
+    const String &thingName,
+    const String &shadowProperty,
+    const uint8_t &value,
+    bool resetDesired = true)
+{
+    CLog::Log(LOGINFO,  "Changing local shadow value to %i.\n", value);
+
+    Aws::Iotshadow::ShadowState state;
+    JsonObject desired;
+    desired.WithInt64(shadowProperty, value);
+    JsonObject reported;
+    reported.WithInt64(shadowProperty, value);
+    if (resetDesired)
+      state.Desired = desired;
+    state.Reported = reported;
+
+    Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
+    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    String uuid(playerMACAddress.c_str());
+    updateShadowRequest.ClientToken = uuid;
+    updateShadowRequest.ThingName = thingName;
+    updateShadowRequest.State = state;
+
+    auto publishCompleted = [thingName, value](int ioErr) {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+            CLog::Log(LOGINFO,  "failed to update %s shadow state: error %s\n", thingName.c_str(), ErrorDebugString(ioErr));
+            return;
+        }
+
+        CLog::Log(LOGINFO,  "Successfully updated shadow state for %s, to %i\n", thingName.c_str(), value);
+    };
+
+    client.PublishUpdateShadow(updateShadowRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, std::move(publishCompleted));
+}
 CNWIoT::CNWIoT()
 : CThread("CNWIoT")
 {
@@ -1051,6 +1088,15 @@ void CNWIoT::Process()
               }
               else
                 s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
+            if (event->State->View().ValueExists("apiVersion"))
+            {
+              int apiVersion = event->State->View().GetInteger("apiVersion");
+              CNWClient* client = CNWClient::GetClient();
+              client->SetApiVersion(apiVersion);
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - apiVersion requested is %i", apiVersion);
+
+              Sleep(200);
+              i_changeShadowValue(shadowClient, strThingName, "apiVersion", client->GetApiVersion());
             }
           }
         }
