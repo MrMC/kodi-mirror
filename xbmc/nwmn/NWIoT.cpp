@@ -110,8 +110,8 @@ using namespace std::chrono;      // nanoseconds, system_clock, seconds
 static const char *SHADOW_STATUS_VALUE_DEFAULT = "online";
 static const char *SHADOW_PLAYBACK_VALUE_DEFAULT = "stop";
 static const char *SHADOW_ORIENTATION_VALUE_DEFAULT = "horizontal";
-static const char *SHADOW_REBOOT_VALUE_DEFAULT = "false";
-static const char *SHADOW_QUIT_VALUE_DEFAULT = "false";
+static const bool SHADOW_REBOOT_VALUE_DEFAULT = false;
+static const bool SHADOW_QUIT_VALUE_DEFAULT = false;
 
 CCriticalSection CNWIoT::m_payloadLock;
 
@@ -198,6 +198,45 @@ static void i_changeShadowValue(
 
     client.PublishUpdateShadow(updateShadowRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, std::move(publishCompleted));
 }
+
+static void b_changeShadowValue(
+    Aws::Iotshadow::IotShadowClient &client,
+    const String &thingName,
+    const String &shadowProperty,
+    const bool &value,
+    bool resetDesired = true)
+{
+    CLog::Log(LOGINFO,  "Changing local shadow value to %s.\n", value ? "true":"false");
+
+    Aws::Iotshadow::ShadowState state;
+    JsonObject desired;
+    desired.WithBool(shadowProperty, value);
+    JsonObject reported;
+    reported.WithBool(shadowProperty, value);
+    if (resetDesired)
+      state.Desired = desired;
+    state.Reported = reported;
+
+    Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
+    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    String uuid(playerMACAddress.c_str());
+    updateShadowRequest.ClientToken = uuid;
+    updateShadowRequest.ThingName = thingName;
+    updateShadowRequest.State = state;
+
+    auto publishCompleted = [thingName, value](int ioErr) {
+        if (ioErr != AWS_OP_SUCCESS)
+        {
+            CLog::Log(LOGINFO,  "failed to update %s shadow state: error %s\n", thingName.c_str(), ErrorDebugString(ioErr));
+            return;
+        }
+
+        CLog::Log(LOGINFO,  "Successfully updated shadow state for %s, to %s\n", thingName.c_str(), value ? "true":"false");
+    };
+
+    client.PublishUpdateShadow(updateShadowRequest, AWS_MQTT_QOS_AT_LEAST_ONCE, std::move(publishCompleted));
+}
+
 CNWIoT::CNWIoT()
 : CThread("CNWIoT")
 {
@@ -1050,21 +1089,21 @@ void CNWIoT::Process()
             }
             if (event->State->View().ValueExists("quit"))
             {
-              if (event->State->View().GetString("quit")  == "true")
+              if (event->State->View().GetBool("quit"))
               {
-                s_changeShadowValue(shadowClient, strThingName, "quit", "false");
+                b_changeShadowValue(shadowClient, strThingName, "quit", false);
                 Sleep(2000);
                 KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_QUIT);
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Quit");
               }
               else
-                s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+                b_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
             }
             if (event->State->View().ValueExists("reboot"))
             {
-              if (event->State->View().GetString("reboot") == "true")
+              if (event->State->View().GetBool("reboot"))
               {
-                s_changeShadowValue(shadowClient, strThingName, "reboot", "false");
+                b_changeShadowValue(shadowClient, strThingName, "reboot", false);
                 StopThread();
                 Sleep(2000);
                 // reboot the machine
@@ -1075,19 +1114,20 @@ void CNWIoT::Process()
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
               }
               else
-                s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
+                b_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
             }
             if (event->State->View().ValueExists("forceFirmwareUpdate"))
             {
-              if (event->State->View().GetString("forceFirmwareUpdate") == "true")
+              if (event->State->View().GetBool("forceFirmwareUpdate"))
               {
-                s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
+                b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - forceFirmwareUpdate");
                 CNWClient* client = CNWClient::GetClient();
                 client->CheckUpdate();
               }
               else
-                s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", "false");
+                b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
+            }
             if (event->State->View().ValueExists("apiVersion"))
             {
               int apiVersion = event->State->View().GetInteger("apiVersion");
@@ -1160,8 +1200,8 @@ void CNWIoT::Process()
       s_changeShadowValue(shadowClient, strThingName, "orientation", SHADOW_ORIENTATION_VALUE_DEFAULT, false);
 
     // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
-    s_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
-    s_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
+    b_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
+    b_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
   }
 
   while (!m_bStop)
