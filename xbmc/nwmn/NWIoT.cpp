@@ -58,6 +58,7 @@
 #include "utils/JSONVariantParser.h"
 #include "utils/JSONVariantWriter.h"
 #include "dialogs/GUIDialogKaiToast.h"
+#include "speedtest/SpeedTest.h"
 
 
 #include <string>
@@ -453,7 +454,99 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
 #endif
           CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
         }
+        if (msgDetails.isMember("speedtest") && msgDetails["speedtest"].asBoolean())
+        {
+          auto sp = SpeedTest(SPEED_TEST_MIN_SERVER_VERSION);
+          IPInfo info;
+          CVariant payloadObject;
+          ServerInfo serverInfo;
+          ServerInfo serverQualityInfo;
 
+          if (sp.ipInfo(info))
+          {
+            // Timestamp
+            CDateTime time = CDateTime::GetCurrentDateTime();
+            payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
+
+            // IP info
+            payloadObject["client"]["ip"] = info.ip_address;
+            payloadObject["client"]["lat"] = info.lat;
+            payloadObject["client"]["lon"] = info.lon;
+            payloadObject["client"]["isp"] = info.isp;
+
+            // servers
+            auto serverList = sp.serverList();
+            if (!serverList.empty())
+            {
+              payloadObject["servers_online"] = (int)serverList.size();
+              int sampleSize = 5;
+              serverInfo = sp.bestServer(sampleSize);
+
+              payloadObject["server"]["name"]     = serverInfo.name;
+              payloadObject["server"]["distance"] = serverInfo.distance;
+              payloadObject["server"]["latency"]  = (double)sp.latency();
+              payloadObject["server"]["host"]     = serverInfo.host;
+              payloadObject["server"]["country"]  = serverInfo.country;
+              payloadObject["server"]["id"]       = serverInfo.id;
+
+              // general
+              payloadObject["ping"]["latency"] = (double)sp.latency();
+              long jitter = 0;
+              if (sp.jitter(serverInfo, jitter))
+              {
+                payloadObject["ping"]["jitter"] = (double)jitter;
+              }
+
+              // precheck test
+              double preSpeed = 0;
+              if (sp.downloadSpeed(serverInfo, preflightConfigDownload, preSpeed))
+              {
+                TestConfig uploadConfig;
+                TestConfig downloadConfig;
+
+                if (preSpeed > 4 && preSpeed <= 30)
+                {
+                    downloadConfig = narrowConfigDownload;
+                    uploadConfig   = narrowConfigUpload;
+                }
+                else if (preSpeed > 30 && preSpeed < 150)
+                {
+                    downloadConfig = broadbandConfigDownload;
+                    uploadConfig   = broadbandConfigUpload;
+                }
+                else if (preSpeed >= 150)
+                {
+                    downloadConfig = fiberConfigDownload;
+                    uploadConfig   = fiberConfigUpload;
+                }
+
+                // download test
+                double downloadSpeed = 0;
+                CStopWatch  timer;
+                timer.StartZero();
+                if (sp.downloadSpeed(serverInfo, downloadConfig, downloadSpeed))
+                {
+                  payloadObject["download"]["bytes"] = (int)(downloadSpeed*1000*1000);
+                  int elapsed = timer.GetElapsedMilliseconds();
+                  payloadObject["download"]["elapsed"] = elapsed;
+                }
+
+                // upload test
+                double uploadSpeed = 0;
+                timer.StartZero();
+                if (sp.uploadSpeed(serverInfo, uploadConfig, uploadSpeed))
+                {
+                  payloadObject["upload"]["bytes"] = (int)(uploadSpeed*1000*1000);
+                  int elapsed = timer.GetElapsedMilliseconds();
+                  payloadObject["upload"]["elapsed"] = elapsed;
+                }
+              }
+            }
+          }
+          CVariant payload;
+          payload["details"] = payloadObject;
+          notifyEvent("speedTest", payload);
+        }
       }
     }
   }
@@ -836,8 +929,10 @@ void CNWIoT::Process()
   String aws_s(thingName.c_str(), thingName.size());
   strThingName = aws_s;
 
-  std::string strTopic = "dt/envoi/events/MN_" + playerMACAddress;
-  String topic(strTopic.c_str());
+  std::string strDTopic = "dt/envoi/events/MN_" + playerMACAddress;
+  std::string strCMDTopic = "cmd/envoi/events/MN_" + playerMACAddress;
+  String dtopic(strDTopic.c_str());
+  String cmdtopic(strCMDTopic.c_str());
   String clientId(playerMACAddress.c_str());
   std::promise<bool> connectionCompletedPromise;
   std::promise<void> connectionClosedPromise;
@@ -971,42 +1066,7 @@ void CNWIoT::Process()
 
 //  if (connectionCompletedPromise.get_future().get())
 //  {
-//    auto onPublish = [&](Mqtt::MqttConnection &, const String &topic, const ByteBuf &byteBuf)
-//    {
-//      CVariant resultObject;
-//      String payload((char *)byteBuf.buffer, byteBuf.len);
-//      CJSONVariantParser::Parse(payload.c_str(), resultObject);
-//      MsgReceived(resultObject);
-//    };
 //
-//    /*
-//     * Subscribe for incoming publish messages on topic.
-//     */
-//    std::promise<void> subscribeFinishedPromise;
-//    auto onSubAck = [&](Mqtt::MqttConnection &, uint16_t packetId, const String &topic, Mqtt::QOS QoS, int errorCode)
-//    {
-//            if (errorCode)
-//            {
-//              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe failed with error %s", aws_error_debug_str(errorCode));
-//                exit(-1);
-//            }
-//            else
-//            {
-//                if (!packetId || QoS == AWS_MQTT_QOS_FAILURE)
-//                {
-//                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe rejected by the broker.");
-//                    exit(-1);
-//                }
-//                else
-//                {
-//                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe on topic %s on packetId %d Succeeded", topic.c_str(), packetId);
-//                }
-//            }
-//            subscribeFinishedPromise.set_value();
-//        };
-//
-//      connection->Subscribe(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, onPublish, onSubAck);
-//      subscribeFinishedPromise.get_future().wait();
 //  }
 
   Aws::Iotshadow::IotShadowClient shadowClient(connection);
@@ -1202,6 +1262,46 @@ void CNWIoT::Process()
     // reset quit and reboot to false on start, we dont want to get stuck in an infinite loop
     b_changeShadowValue(shadowClient, strThingName, "quit", SHADOW_QUIT_VALUE_DEFAULT);
     b_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
+
+
+    auto onPublish = [&](Mqtt::MqttConnection &, const String &topic, const ByteBuf &byteBuf)
+    {
+      CVariant resultObject;
+      String payload((char *)byteBuf.buffer, byteBuf.len);
+      std::string pl = (char *)byteBuf.buffer;
+      CJSONVariantParser::Parse(pl, resultObject);
+      MsgReceived(resultObject);
+    };
+
+    /*
+     * Subscribe for incoming publish messages on topic.
+     */
+    std::promise<void> subscribeFinishedPromise;
+    auto onSubAck = [&](Mqtt::MqttConnection &, uint16_t packetId, const String &topic, Mqtt::QOS QoS, int errorCode)
+    {
+            if (errorCode)
+            {
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe failed with error %s", aws_error_debug_str(errorCode));
+                exit(-1);
+            }
+            else
+            {
+                if (!packetId || QoS == AWS_MQTT_QOS_FAILURE)
+                {
+                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe rejected by the broker.");
+                    exit(-1);
+                }
+                else
+                {
+                  CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Subscribe on topic %s on packetId %d Succeeded", topic.c_str(), packetId);
+                }
+            }
+            subscribeFinishedPromise.set_value();
+        };
+
+      connection->Subscribe(cmdtopic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, onPublish, onSubAck);
+      subscribeFinishedPromise.get_future().wait();
+
   }
 
   while (!m_bStop)
@@ -1242,7 +1342,7 @@ void CNWIoT::Process()
           }
           publishCompletedPromise.set_value();
         };
-        connection->Publish(topic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+        connection->Publish(dtopic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
         publishCompletedPromise.get_future().wait();
 
         Sleep(1);
@@ -1251,11 +1351,11 @@ void CNWIoT::Process()
     }
   }
 
-  // enable if we subscribe to listen to a topic
-  //  std::promise<void> unsubscribeFinishedPromise;
-  //  connection->Unsubscribe(
-  //      topic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
-  //  unsubscribeFinishedPromise.get_future().wait();
+//   enable if we subscribe to listen to a topic
+    std::promise<void> unsubscribeFinishedPromise;
+    connection->Unsubscribe(
+        cmdtopic.c_str(), [&](Mqtt::MqttConnection &, uint16_t, int) { unsubscribeFinishedPromise.set_value(); });
+    unsubscribeFinishedPromise.get_future().wait();
 
   /* Disconnect */
   CLog::Log(LOGINFO, "**NW** - connection->Disconnect()");
