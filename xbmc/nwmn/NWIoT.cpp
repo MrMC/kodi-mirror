@@ -1308,10 +1308,12 @@ void CNWIoT::Process()
   {
     if (!CServiceBroker::GetNetwork().GetFirstConnectedInterface())
       continue;
-    /// report online status every 10000ms (10sec)
-    if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 10000.0f)
+    // report online status every 30000ms (30sec)
+    if (m_heartbeatTimer.IsRunning() && m_heartbeatTimer.GetElapsedMilliseconds() > 30000.0f)
     {
-      s_changeShadowValue(shadowClient, strThingName, "status", SHADOW_STATUS_VALUE_DEFAULT);
+      CVariant payloadObject;
+      payloadObject["details"]["status"] = SHADOW_STATUS_VALUE_DEFAULT;
+      notifyEvent("heartbeat", payloadObject);
       m_heartbeatTimer.StartZero();
     }
 
