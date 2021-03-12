@@ -6,7 +6,7 @@
 		<left>0</left>
 		<top>0</top>
 	</coordinates>
-	<controls>
+<!-- 	<controls>
 		<control type="group">
 			<depth>DepthDialog+</depth>
 			<left>1070</left>
@@ -48,5 +48,5 @@
 				<height>8</height>
 			</control>
 		</control>
-	</controls>
+	</controls> -->
 </window>
