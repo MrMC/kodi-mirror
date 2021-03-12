@@ -69,8 +69,8 @@ typedef struct NWPlayerInfo {
 
 // ---------------------------------------------
 typedef struct NWAsset {
-  int id;
-  int group_id;
+  std::string id;
+  std::string group_id;
   std::string name;
   std::string type;
   std::string video_url;
@@ -91,20 +91,20 @@ typedef struct NWAsset {
 } NWAsset;
 
 typedef struct NWGroup {
-  int id;
+  std::string id;
   std::string name;
   int next_asset_index;
   std::vector<NWAsset> assets;
 } NWGroup;
 
 typedef struct NWPlaylist {
-  int id;
+  std::string id;
   std::string name;
   std::string type;
   std::string video_format;
   std::string layout;
   std::string updated_date;
-  std::vector<int> play_order;
+  std::vector<std::string> play_order;
   std::vector<NWGroup> groups;
 } NWPlaylist;
 
@@ -115,6 +115,7 @@ typedef struct NWPlaylist {
 bool HasLocalPlayer(std::string home);
 bool LoadLocalPlayer(std::string home, NWPlayerInfo &playerInfo);
 bool SaveLocalPlayer(std::string home, const NWPlayerInfo &playerInfo);
+bool RemoveLocalPlayer(std::string home);
 
 bool HasLocalPlaylist(std::string home);
 bool LoadLocalPlaylist(std::string home, NWPlaylist &payList);

@@ -581,7 +581,7 @@ bool CNWClient::GetProgamInfo()
 
     bool updateProgram = false;
     // if the fetched player's playlist id does not match the current
-    if (std_stoi(m_PlayerInfo.playlist_id) != m_ProgramInfo.id)
+    if (m_PlayerInfo.playlist_id != m_ProgramInfo.id)
     {
       CLog::Log(LOGDEBUG, "**NW** - CNWClient::GetProgamInfo playlist_id changed");
       updateProgram = true;
@@ -1074,7 +1074,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
   const TVAPI_Playlist &playlist, const TVAPI_PlaylistItems &playlistItems)
 {
   // convert server structures to player structure
-  playList.id = std_stoi(playlist.id);
+  playList.id = playlist.id;
   playList.name = playlist.name;
   playList.type = playlist.type;
   // format is "2013-08-22"
@@ -1088,7 +1088,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
     for (auto catagory : playlist.categories)
     {
       NWGroup group;
-      group.id = std_stoi(catagory.id);
+      group.id = catagory.id;
       group.name = catagory.name;
       group.next_asset_index = 0;
       // always remember original group play order
@@ -1108,9 +1108,9 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
           if (item.tv_category_id == catagory.id)
           {
             NWAsset asset;
-            asset.id = std_stoi(item.id);
+            asset.id = item.id;
             asset.name = item.name;
-            asset.group_id = std_stoi(item.tv_category_id);
+            asset.group_id = item.tv_category_id;
             asset.valid = false;
 
             std::string video_format = CheckForVideoFormatAndFallBack(playList.video_format, item.files);
@@ -1121,7 +1121,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
                 // trap out bad urls
                 if (file.path.find("proxy.membernettv.com") != std::string::npos)
                   continue;
-                asset.id = std_stoi(item.id);
+                asset.id = item.id;
                 asset.type = file.type;
                 asset.video_url = file.path;
                 asset.video_md5 = file.etag;
@@ -1131,7 +1131,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
                 asset.available_from.SetFromDBDateTime(item.availability_from);
                 asset.video_basename = URIUtils::GetFileName(asset.video_url);
                 std::string video_extension = URIUtils::GetExtension(asset.video_url);
-                std::string localpath = kNWClient_DownloadVideoPath + std_to_string(asset.id) + video_extension;
+                std::string localpath = kNWClient_DownloadVideoPath + asset.id + video_extension;
                 asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
                 break;
               }
@@ -1148,7 +1148,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
                 asset.thumb_size = std_stoi(item.thumb.size);
                 asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
                 std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
-                std::string localpath = kNWClient_DownloadVideoThumbNailsPath + std_to_string(asset.id) + thumb_extension;
+                std::string localpath = kNWClient_DownloadVideoThumbNailsPath + asset.id + thumb_extension;
                 asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
               }
               group.assets.push_back(asset);
@@ -1182,7 +1182,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
       {
         const TVAPI_PlaylistItem &item = *it;
         NWAsset asset;
-        asset.id = std_stoi(item.id);
+        asset.id = item.id;
         asset.name = item.name;
         asset.group_id = group.id;
         asset.valid = false;
@@ -1195,7 +1195,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
             // trap out bad urls
             if (file.path.find("proxy.membernettv.com") != std::string::npos)
               continue;
-            asset.id = std_stoi(item.id);
+            asset.id = item.id;
             asset.type = file.type;
             asset.video_url = file.path;
             asset.video_md5 = file.etag;
@@ -1205,7 +1205,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
             asset.available_from.SetFromDBDateTime(item.availability_from);
             asset.video_basename = URIUtils::GetFileName(asset.video_url);
             std::string video_extension = URIUtils::GetExtension(asset.video_url);
-            std::string localpath = kNWClient_DownloadVideoPath + std_to_string(asset.id) + video_extension;
+            std::string localpath = kNWClient_DownloadVideoPath + asset.id + video_extension;
             asset.video_localpath = URIUtils::AddFileToFolder(home, localpath);
             break;
           }
@@ -1222,7 +1222,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
             asset.thumb_size = std_stoi(item.thumb.size);
             asset.thumb_basename = URIUtils::GetFileName(asset.thumb_url);
             std::string thumb_extension = URIUtils::GetExtension(asset.thumb_url);
-            std::string localpath = kNWClient_DownloadVideoThumbNailsPath + std_to_string(asset.id) + thumb_extension;
+            std::string localpath = kNWClient_DownloadVideoThumbNailsPath + asset.id + thumb_extension;
             asset.thumb_localpath = URIUtils::AddFileToFolder(home, localpath);
           }
           group.assets.push_back(asset);
@@ -1247,7 +1247,7 @@ void CNWClient::AssetUpdateCallBack(const void *ctx, NWAsset &asset, AssetDownlo
   if (downloadState == AssetDownloadState::wasDownloaded)
   {
     client->m_Player->MarkValidated(asset);
-    client->LogFilesDownLoaded(std_to_string(asset.id),asset.type);
+    client->LogFilesDownLoaded(asset.id,asset.type);
   }
 
   if (client->m_Player->IsPlaying() || !client->m_bypassDownloadWait)
@@ -1384,7 +1384,6 @@ bool CNWClient::AllowExit()
 bool CNWClient::CheckUpdate()
 {
   m_updaterRunning = true;
-  std::string updateURL = "https://cdn.iot-dev.envoi.cloud/json/update.json";
   std::string updateFolder;
   std::string tempPath = CSpecialProtocol::TranslatePath("special://temp/");
 #ifndef TARGET_DARWIN

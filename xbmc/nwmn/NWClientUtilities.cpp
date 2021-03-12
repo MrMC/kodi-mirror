@@ -149,7 +149,7 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
   if (!rootElement)
     return false;
 
-  XMLUtils::GetInt(   rootElement, "id", playList.id);
+  XMLUtils::GetString(rootElement, "id", playList.id);
   XMLUtils::GetString(rootElement, "name", playList.name);
   XMLUtils::GetString(rootElement, "type", playList.type);
   XMLUtils::GetString(rootElement, "video_format", playList.video_format);
@@ -163,7 +163,7 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
   for (auto order: orders)
   {
     if (!order.empty())
-      playList.play_order.push_back(std_stoi(order));
+      playList.play_order.push_back(order);
   }
 
   playList.groups.clear();
@@ -176,7 +176,7 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
   while (groupElement != NULL)
   {
     NWGroup group;
-    XMLUtils::GetInt(   groupElement, "id", group.id);
+    XMLUtils::GetString(groupElement, "id", group.id);
     XMLUtils::GetString(groupElement, "name", group.name);
     XMLUtils::GetInt(   groupElement, "next_asset_index", group.next_asset_index);
 
@@ -185,8 +185,8 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
     while (assetElement != nullptr)
     {
       NWAsset asset;
-      XMLUtils::GetInt(   assetElement, "id", asset.id);
-      XMLUtils::GetInt(   assetElement, "group_id", asset.group_id);
+      XMLUtils::GetString(assetElement, "id", asset.id);
+      XMLUtils::GetString(assetElement, "group_id", asset.group_id);
       XMLUtils::GetString(assetElement, "name", asset.name);
       XMLUtils::GetString(assetElement, "type", asset.type);
 
@@ -229,7 +229,7 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
   TiXmlNode *rootNode = xmlDoc.InsertEndChild(rootElement);
   if (rootNode)
   {
-    XMLUtils::SetInt(   rootNode, "id", playList.id);
+    XMLUtils::SetString(rootNode, "id", playList.id);
     XMLUtils::SetString(rootNode, "name", playList.name);
     XMLUtils::SetString(rootNode, "type", playList.type);
     XMLUtils::SetString(rootNode, "video_format", playList.video_format);
@@ -237,7 +237,7 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
     XMLUtils::SetString(rootNode, "updated_date", playList.updated_date);
     std::string play_order;
     for (auto order: playList.play_order)
-      play_order += std_to_string(order) + ",";
+      play_order += order + ",";
     // remove the trailing ','
     play_order.pop_back();
     XMLUtils::SetString(rootNode, "play_order", play_order);
@@ -248,7 +248,7 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
       TiXmlNode *groupNode = rootNode->InsertEndChild(groupElement);
       if (groupNode)
       {
-        XMLUtils::SetInt(   groupNode, "id", group.id);
+        XMLUtils::SetString(groupNode, "id", group.id);
         XMLUtils::SetString(groupNode, "name", group.name);
         XMLUtils::SetInt(   groupNode, "next_asset_index", group.next_asset_index);
         for (auto asset: group.assets)
@@ -257,8 +257,8 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
           TiXmlNode *assetNode = groupNode->InsertEndChild(assetElement);
           if (assetNode)
           {
-            XMLUtils::SetInt(   assetNode, "id", asset.id);
-            XMLUtils::SetInt(   assetNode, "group_id", asset.group_id);
+            XMLUtils::SetString(assetNode, "id", asset.id);
+            XMLUtils::SetString(assetNode, "group_id", asset.group_id);
             XMLUtils::SetString(assetNode, "name", asset.name);
             XMLUtils::SetString(assetNode, "type", asset.type);
 

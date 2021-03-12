@@ -95,15 +95,15 @@ bool CNWMediaManager::GetLocalAsset(size_t index, struct NWAsset &asset)
 bool CNWMediaManager::GetLocalAsset(int asset_id, NWAsset &asset)
 {
   bool rtn = false;
-  for (size_t index = 0; index < m_assets.size(); index++)
-  {
-    if (asset_id == m_assets[index].id)
-    {
-      asset = m_assets[index];
-      rtn = true;
-      break;
-    }
-  }
+//  for (size_t index = 0; index < m_assets.size(); index++)
+//  {
+//    if (asset_id == m_assets[index].id)
+//    {
+//      asset = m_assets[index];
+//      rtn = true;
+//      break;
+//    }
+//  }
   return rtn;
 }
 

@@ -208,7 +208,7 @@ void CNWPlayer::Process()
         CSingleLock asset_lock(m_media_lock);
         if (!m_playlist.groups.empty())
         {
-          int groupID = m_playlist.play_order.front();
+          std::string groupID = m_playlist.play_order.front();
           m_playlist.play_order.erase(m_playlist.play_order.begin());
           m_playlist.play_order.push_back(groupID);
 
@@ -226,7 +226,7 @@ void CNWPlayer::Process()
             if (asset.valid)
             {
               #if ENABLE_NWPLAYER_DEBUGLOGS
-              CLog::Log(LOGDEBUG, "**NW** - CNWPlayer::queue group(%d), asset(%d)", group->id, asset.id);
+              CLog::Log(LOGDEBUG, "**NW** - CNWPlayer::queue group(%s), asset(%s)", group->id, asset.id);
               #endif
 
               CFileItemPtr item(new CFileItem());
