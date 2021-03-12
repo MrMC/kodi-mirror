@@ -96,6 +96,8 @@ public:
   bool          CheckUpdate();
   void          SetApiVersion(int version);
   int           GetApiVersion();
+  void          ResetStartupState() { m_StartupState = ClientFetchUpdatePlayer; };
+  void          ClearLocalPlayer();
 
 protected:
   virtual void  Process();

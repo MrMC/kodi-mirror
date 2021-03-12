@@ -28,8 +28,12 @@
 
 #define ENABLE_TVAPI_DEBUGLOGS 0
 
-const std::string kTVAPI_URLBASE = "https://www.nationwidemember.com/tv-api/1/";
+//const std::string kTVAPI_URLBASE = "https://api.iot-dev.envoi.cloud/tv-api/1/";
+const std::string kTVAPI_URLBASE = "http://www.nationwidemember.com/tv-api/1/";
 const std::string kTVAPI_URLBASE_TESTSITE = "http://test.nationwidemember.com/tv-api/1/";
+//const std::string kTVAPI_URLBASEENVOI = "https://api.iot-dev.envoi.cloud/tv-api/3/";
+const std::string kTVAPI_URLBASEENVOI = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/";
+
 const std::string kTVAPI_UPDATEURL = "https://cdn.iot-dev.envoi.cloud/json/update.json";
 
 // ---------------------------------------------

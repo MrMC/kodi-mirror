@@ -59,6 +59,11 @@ bool HasLocalPlayer(std::string home)
   return XFILE::CFile::Exists(home + kNWClient_PlayerFileName);
 }
 
+bool RemoveLocalPlayer(std::string home)
+{
+  return XFILE::CFile::Delete(home + kNWClient_PlayerFileName);
+}
+
 bool LoadLocalPlayer(std::string home, NWPlayerInfo &playerInfo)
 {
   CXBMCTinyXML xmlDoc;

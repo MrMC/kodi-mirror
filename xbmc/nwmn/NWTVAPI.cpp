@@ -149,97 +149,173 @@ bool TVAPI_GetStatus(TVAPI_Status &status)
 
 bool TVAPI_GetMachine(TVAPI_Machine &machine)
 {
-  XFILE::CCurlFile curlfile;
-  curlfile.SetTimeout(10);
-
-  CURL curl(TVAPI_URLBASE + "machine");
-  curl.SetProtocolOption("seekable", "0");
-  curl.SetProtocolOption("auth", "basic");
-  curl.SetProtocolOption("Cache-Control", "no-cache");
-  curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetUserName(machine.apiKey);
-  curl.SetPassword(machine.apiSecret);
-  std::string strResponse;
-
-  if (curlfile.Get(curl.Get(), strResponse))
+  // old MN API
+  if (TVAPI_GetApiVersion() == 2)
   {
-    #if ENABLE_TVAPI_DEBUGLOGS
-    CLog::Log(LOGDEBUG, "TVAPI_GetMachine %s", strResponse.c_str());
-    #endif
-    CVariant reply;
-    CJSONVariantParser::Parse(strResponse, reply);
+    XFILE::CCurlFile curlfile;
+    curlfile.SetTimeout(10);
 
-    machine.id                    = reply["id"].asString();
-    machine.member                = reply["member"].asString();
-    machine.machine_name          = reply["machine_name"].asString();
-    machine.description           = reply["description"].asString();
-    machine.playlist_id           = reply["playlist_id"].asString();
-    machine.status                = reply["status"].asString();
-    machine.vendor                = reply["vendor"].asString();
-    machine.hardware              = reply["hardware"].asString();
-    machine.timezone              = reply["timezone"].asString();
-    machine.serial_number         = reply["serial_number"].asString();
-    machine.warranty_number       = reply["warranty_number"].asString();
-    machine.video_format          = reply["video_format"].asString();
-    machine.allow_new_content     = reply["allow_new_content"].asString();
-    machine.allow_software_update = reply["allow_software_update"].asString();
-    machine.update_time           = reply["update_time"].asString();
-    machine.update_interval       = reply["update_interval"].asString();
+    CURL curl(TVAPI_URLBASE + "machine");
+    curl.SetProtocolOption("seekable", "0");
+    curl.SetProtocolOption("auth", "basic");
+    curl.SetProtocolOption("Cache-Control", "no-cache");
+    curl.SetProtocolOption("Content-Type", "application/json");
+    curl.SetUserName(machine.apiKey);
+    curl.SetPassword(machine.apiSecret);
+    std::string strResponse;
 
-    CVariant location             = reply["location"];
-    machine.location.id           = location["id"].asString();
-    machine.location.name         = location["name"].asString();
-    machine.location.address      = location["address"].asString();
-    machine.location.address2     = location["address2"].asString();
-    machine.location.city         = location["city"].asString();
-    machine.location.state        = location["state"].asString();
-    machine.location.phone        = location["phone"].asString();
-    machine.location.fax          = location["fax"].asString();
+    if (curlfile.Get(curl.Get(), strResponse))
+    {
+      #if ENABLE_TVAPI_DEBUGLOGS
+      CLog::Log(LOGDEBUG, "TVAPI_GetMachine %s", strResponse.c_str());
+      #endif
+      CVariant reply;
+      CJSONVariantParser::Parse(strResponse, reply);
 
-    CVariant network              = reply["network"];
-    machine.network.macaddress    = network["macaddress"].asString();
-    machine.network.macaddress_wireless = network["macaddress_wireless"].asString();
-    machine.network.dhcp          = network["dhcp"].asString();
-    machine.network.ipaddress     = network["ipaddress"].asString();
-    machine.network.subnet        = network["subnet"].asString();
-    machine.network.router        = network["router"].asString();
-    machine.network.dns_1         = network["dns_1"].asString();
-    machine.network.dns_2         = network["dns_2"].asString();
+      machine.id                    = reply["id"].asString();
+      machine.member                = reply["member"].asString();
+      machine.machine_name          = reply["machine_name"].asString();
+      machine.description           = reply["description"].asString();
+      machine.playlist_id           = reply["playlist_id"].asString();
+      machine.status                = reply["status"].asString();
+      machine.vendor                = reply["vendor"].asString();
+      machine.hardware              = reply["hardware"].asString();
+      machine.timezone              = reply["timezone"].asString();
+      machine.serial_number         = reply["serial_number"].asString();
+      machine.warranty_number       = reply["warranty_number"].asString();
+      machine.video_format          = reply["video_format"].asString();
+      machine.allow_new_content     = reply["allow_new_content"].asString();
+      machine.allow_software_update = reply["allow_software_update"].asString();
+      machine.update_time           = reply["update_time"].asString();
+      machine.update_interval       = reply["update_interval"].asString();
 
-    CVariant settings             = reply["settings"];
-    machine.settings.network      = settings["network"].asString();
-    machine.settings.pairing      = settings["pairing"].asString();
-    machine.settings.network      = settings["network"].asString();
-    machine.settings.about        = settings["about"].asString();
-    machine.settings.hdmibrightness = settings["hdmibrightness"].asString();
-    machine.settings.tvresolution = settings["tvresolution"].asString();
-    machine.settings.updatesoftware = settings["updatesoftware"].asString();
-    machine.settings.language     = settings["language"].asString();
-    machine.settings.legal        = settings["legal"].asString();
+      CVariant location             = reply["location"];
+      machine.location.id           = location["id"].asString();
+      machine.location.name         = location["name"].asString();
+      machine.location.address      = location["address"].asString();
+      machine.location.address2     = location["address2"].asString();
+      machine.location.city         = location["city"].asString();
+      machine.location.state        = location["state"].asString();
+      machine.location.phone        = location["phone"].asString();
+      machine.location.fax          = location["fax"].asString();
 
-    CVariant menu                 = reply["menu"];
-    machine.menu.membernettv      = menu["membernettv"].asString();
-    machine.menu.vendorcommercials = menu["vendorcommercials"].asString();
-    machine.menu.hdcontent        = menu["hdcontent"].asString();
-    machine.menu.membercommercials = menu["membercommercials"].asString();
-    machine.menu.movietrailers    = menu["movietrailers"].asString();
-    machine.menu.promotionalcampaigns = menu["promotionalcampaigns"].asString();
-    machine.menu.nationwidebroadcasts = menu["nationwidebroadcasts"].asString();
-    machine.menu.imaginationwidehd = menu["imaginationwidehd"].asString();
-    machine.menu.primemediacommercialfactory = menu["primemediacommercialfactory"].asString();
+      CVariant network              = reply["network"];
+      machine.network.macaddress    = network["macaddress"].asString();
+      machine.network.macaddress_wireless = network["macaddress_wireless"].asString();
+      machine.network.dhcp          = network["dhcp"].asString();
+      machine.network.ipaddress     = network["ipaddress"].asString();
+      machine.network.subnet        = network["subnet"].asString();
+      machine.network.router        = network["router"].asString();
+      machine.network.dns_1         = network["dns_1"].asString();
+      machine.network.dns_2         = network["dns_2"].asString();
 
-    CVariant membernet_software   = reply["membernet_software"];
-    machine.membernet_software.id = membernet_software["id"].asString();
-    machine.membernet_software.version = membernet_software["version"].asString();
-    machine.membernet_software.cfbundleversion = membernet_software["cfbundleversion"].asString();
-    machine.membernet_software.url = membernet_software["url"].asString();
+      CVariant settings             = reply["settings"];
+      machine.settings.network      = settings["network"].asString();
+      machine.settings.pairing      = settings["pairing"].asString();
+      machine.settings.network      = settings["network"].asString();
+      machine.settings.about        = settings["about"].asString();
+      machine.settings.hdmibrightness = settings["hdmibrightness"].asString();
+      machine.settings.tvresolution = settings["tvresolution"].asString();
+      machine.settings.updatesoftware = settings["updatesoftware"].asString();
+      machine.settings.language     = settings["language"].asString();
+      machine.settings.legal        = settings["legal"].asString();
 
-    CVariant apple_software       = reply["apple_software"];
-    machine.apple_software.id     = apple_software["id"].asString();
-    machine.apple_software.version = apple_software["version"].asString();
-    machine.apple_software.url    = apple_software["url"].asString();
+      CVariant menu                 = reply["menu"];
+      machine.menu.membernettv      = menu["membernettv"].asString();
+      machine.menu.vendorcommercials = menu["vendorcommercials"].asString();
+      machine.menu.hdcontent        = menu["hdcontent"].asString();
+      machine.menu.membercommercials = menu["membercommercials"].asString();
+      machine.menu.movietrailers    = menu["movietrailers"].asString();
+      machine.menu.promotionalcampaigns = menu["promotionalcampaigns"].asString();
+      machine.menu.nationwidebroadcasts = menu["nationwidebroadcasts"].asString();
+      machine.menu.imaginationwidehd = menu["imaginationwidehd"].asString();
+      machine.menu.primemediacommercialfactory = menu["primemediacommercialfactory"].asString();
 
-    return true;
+      CVariant membernet_software   = reply["membernet_software"];
+      machine.membernet_software.id = membernet_software["id"].asString();
+      machine.membernet_software.version = membernet_software["version"].asString();
+      machine.membernet_software.cfbundleversion = membernet_software["cfbundleversion"].asString();
+      machine.membernet_software.url = membernet_software["url"].asString();
+
+      CVariant apple_software       = reply["apple_software"];
+      machine.apple_software.id     = apple_software["id"].asString();
+      machine.apple_software.version = apple_software["version"].asString();
+      machine.apple_software.url    = apple_software["url"].asString();
+
+      return true;
+    }
+  }
+  // new ENVOI API
+  else
+  {
+    if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+    {
+      std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+      XFILE::CCurlFile curlfile;
+      curlfile.SetTimeout(10);
+//      std::string urlBase = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/manageEncoders";
+      std::string token = "55de82c571202c21601dbd58a3b745c8e619d5e585fb8c3422fc0527cad82937c70dc197cadbc31e80de743aba1094c7ac11a6b4463fe025ecaeace74766d824e9192e98a5b88dfafeb0e5defda85800dc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2";
+      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
+      curl.SetProtocolOption("seekable", "0");
+      curl.SetProtocolOption("Cache-Control", "no-cache");
+      curl.SetProtocolOption("Content-Type", "application/json");
+      curl.SetOption("appname", "membernet");
+      curl.SetOption("activity", "fetch");
+      curl.SetOption("devicetype", "player");
+      curl.SetOption("playBackUrls", "true");
+      curl.SetOption("ethernetMACaddress", playerMACAddress);
+      curl.SetOption("token", token);
+      std::string strResponse;
+      std::string testURL = curl.Get();
+      if (curlfile.Post(curl.Get(), "",strResponse))
+      {
+        #if ENABLE_TVAPI_DEBUGLOGS
+        CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
+        #endif
+
+        CVariant reply;
+        CJSONVariantParser::Parse(strResponse, reply);
+
+        CVariant playlist = reply["playlist"];
+
+
+
+        CVariant results(CVariant::VariantTypeArray);
+        results = reply["result"]["data"][0];
+        std::vector<std::string> plists;
+        //std::vector<std::string> fracs = StringUtils::Split(strAspect, ':');
+        for (int i = 0; i <= results["playlist"].size(); i++)
+          plists.push_back(results["playlist"][i]["id"].asString());
+
+        std::string ret;
+        for(const auto &s : plists) {
+            if(!ret.empty())
+                ret += ",";
+            ret += s;
+        }
+
+        machine.playlist_id           = ret;
+        machine.id                    = results["_id"].asString();
+        machine.member                = results["member"].asString();
+        machine.machine_name          = results["machinename"].asString();
+        machine.description           = results["machinedescription"].asString();
+
+//        machine.status                = reply["status"].asString();
+//        machine.vendor                = reply["vendor"].asString();
+//        machine.hardware              = reply["hardware"].asString();
+//        machine.timezone              = reply["timezone"].asString();
+//        machine.serial_number         = reply["serial_number"].asString();
+//        machine.warranty_number       = reply["warranty_number"].asString();
+//        machine.video_format          = reply["video_format"].asString();
+//        machine.allow_new_content     = reply["allow_new_content"].asString();
+//        machine.allow_software_update = reply["allow_software_update"].asString();
+//        machine.update_time           = reply["update_time"].asString();
+//        machine.update_interval       = reply["update_interval"].asString();
+      }
+    }
+
+
+
   }
 
   return false;
@@ -365,60 +441,69 @@ bool TVAPI_GetPlaylists(TVAPI_Playlists &playlists)
 
 bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id)
 {
-  XFILE::CCurlFile curlfile;
-  curlfile.SetTimeout(10);
-
-  CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id);
-  curl.SetProtocolOption("seekable", "0");
-  curl.SetProtocolOption("auth", "basic");
-  curl.SetProtocolOption("Cache-Control", "no-cache");
-  curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetUserName(playlist.apiKey);
-  curl.SetPassword(playlist.apiSecret);
-  std::string strResponse;
-
-  if (curlfile.Get(curl.Get(), strResponse))
+  // old MN API
+  if (TVAPI_GetApiVersion() == 2)
   {
-    #if ENABLE_TVAPI_DEBUGLOGS
-    CLog::Log(LOGDEBUG, "TVAPI_GetPlaylist %s", strResponse.c_str());
-    #endif
+    XFILE::CCurlFile curlfile;
+    curlfile.SetTimeout(10);
 
-    CVariant reply;
-    CJSONVariantParser::Parse(strResponse, reply);
+    CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id);
+    curl.SetProtocolOption("seekable", "0");
+    curl.SetProtocolOption("auth", "basic");
+    curl.SetProtocolOption("Cache-Control", "no-cache");
+    curl.SetProtocolOption("Content-Type", "application/json");
+    curl.SetUserName(playlist.apiKey);
+    curl.SetPassword(playlist.apiSecret);
+    std::string strResponse;
 
-    playlist.id = reply["id"].asString();
-    playlist.name = reply["name"].asString();
-    playlist.type = reply["type"].asString();
-    playlist.layout = reply["layout"].asString();
-    playlist.member_id = reply["member_id"].asString();
-    playlist.nmg_managed = reply["nmg_managed"].asString();
-    playlist.updated_date = reply["updated_date"].asString();
-
-    if (playlist.type == "smart")
+    if (curlfile.Get(curl.Get(), strResponse))
     {
-      CVariant categories(CVariant::VariantTypeArray);
-      categories = reply["categories"];
-      for (size_t i = 0; i < categories.size(); ++i)
-      {
-        TVAPI_CategoryId category;
-        category.id = categories[i]["id"].asString();
-        category.name = categories[i]["name"].asString();
-        playlist.categories.push_back(category);
-      }
-    }
-    else if (playlist.type == "custom")
-    {
-      CVariant files(CVariant::VariantTypeArray);
-      files = reply["files"];
-      for (size_t i = 0; i < files.size(); ++i)
-      {
-        TVAPI_FileId file;
-        file.id = files[i]["id"].asString();
-        playlist.files.push_back(file);
-      }
-    }
+      #if ENABLE_TVAPI_DEBUGLOGS
+      CLog::Log(LOGDEBUG, "TVAPI_GetPlaylist %s", strResponse.c_str());
+      #endif
 
-    return true;
+      CVariant reply;
+      CJSONVariantParser::Parse(strResponse, reply);
+
+      playlist.id = reply["id"].asString();
+      playlist.name = reply["name"].asString();
+      playlist.type = reply["type"].asString();
+      playlist.layout = reply["layout"].asString();
+      playlist.member_id = reply["member_id"].asString();
+      playlist.nmg_managed = reply["nmg_managed"].asString();
+      playlist.updated_date = reply["updated_date"].asString();
+
+      if (playlist.type == "smart")
+      {
+        CVariant categories(CVariant::VariantTypeArray);
+        categories = reply["categories"];
+        for (size_t i = 0; i < categories.size(); ++i)
+        {
+          TVAPI_CategoryId category;
+          category.id = categories[i]["id"].asString();
+          category.name = categories[i]["name"].asString();
+          playlist.categories.push_back(category);
+        }
+      }
+      else if (playlist.type == "custom")
+      {
+        CVariant files(CVariant::VariantTypeArray);
+        files = reply["files"];
+        for (size_t i = 0; i < files.size(); ++i)
+        {
+          TVAPI_FileId file;
+          file.id = files[i]["id"].asString();
+          playlist.files.push_back(file);
+        }
+      }
+
+      return true;
+    }
+  }
+  // new ENVOI API
+  else
+  {
+    std::vector<std::string> plists = StringUtils::Split(playlist_id, ',');
   }
 
   return false;
@@ -426,125 +511,134 @@ bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id)
 
 bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string playlist_id)
 {
-  XFILE::CCurlFile curlfile;
-  curlfile.SetTimeout(10);
-
-  CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id + "/files");
-  curl.SetProtocolOption("seekable", "0");
-  curl.SetProtocolOption("auth", "basic");
-  curl.SetProtocolOption("Cache-Control", "no-cache");
-  curl.SetProtocolOption("Content-Type", "application/json");
-  curl.SetUserName(playlistItems.apiKey);
-  curl.SetPassword(playlistItems.apiSecret);
-  std::string strResponse;
-
-  if (curlfile.Get(curl.Get(), strResponse))
+  // old MN API
+  if (TVAPI_GetApiVersion() == 2)
   {
-    #if ENABLE_TVAPI_DEBUGLOGS
-    CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
-    #endif
+    XFILE::CCurlFile curlfile;
+    curlfile.SetTimeout(10);
 
-    CVariant reply;
-    CJSONVariantParser::Parse(strResponse, reply);
+    CURL curl(TVAPI_URLBASE + "playlist/" + playlist_id + "/files");
+    curl.SetProtocolOption("seekable", "0");
+    curl.SetProtocolOption("auth", "basic");
+    curl.SetProtocolOption("Cache-Control", "no-cache");
+    curl.SetProtocolOption("Content-Type", "application/json");
+    curl.SetUserName(playlistItems.apiKey);
+    curl.SetPassword(playlistItems.apiSecret);
+    std::string strResponse;
 
-    CVariant playlist = reply["playlist"];
-    playlistItems.id = playlist["id"].asString();
-    playlistItems.name = playlist["name"].asString();
-    playlistItems.type = playlist["type"].asString();
-
-    CVariant results(CVariant::VariantTypeArray);
-    results = reply["results"];
-    for (size_t i = 0; i < results.size(); ++i)
+    if (curlfile.Get(curl.Get(), strResponse))
     {
-      CVariant result = results[i];
+      #if ENABLE_TVAPI_DEBUGLOGS
+      CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
+      #endif
 
-      TVAPI_PlaylistItem item;
-      item.id = result["id"].asString();
-      item.name = result["name"].asString();
-      item.tv_category_id = result["tv_category_id"].asString();
-      item.description = result["description"].asString();
-      item.created_date = result["created_date"].asString();
-      item.updated_date = result["updated_date"].asString();
-      item.completion_date = result["completion_date"].asString();
-      item.theatricalrelease = result["theatricalrelease"].asString();
-      item.dvdrelease = result["dvdrelease"].asString();
-      item.download = result["download"].asString();
-      CVariant availability = result["availability"];
-      item.availability_to = availability["to"].asString();
-      item.availability_from = availability["from"].asString();
+      CVariant reply;
+      CJSONVariantParser::Parse(strResponse, reply);
 
-      CVariant files = result["files"];
-      if (files.isObject())
+      CVariant playlist = reply["playlist"];
+      playlistItems.id = playlist["id"].asString();
+      playlistItems.name = playlist["name"].asString();
+      playlistItems.type = playlist["type"].asString();
+
+      CVariant results(CVariant::VariantTypeArray);
+      results = reply["results"];
+      for (size_t i = 0; i < results.size(); ++i)
       {
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
+        CVariant result = results[i];
+
+        TVAPI_PlaylistItem item;
+        item.id = result["id"].asString();
+        item.name = result["name"].asString();
+        item.tv_category_id = result["tv_category_id"].asString();
+        item.description = result["description"].asString();
+        item.created_date = result["created_date"].asString();
+        item.updated_date = result["updated_date"].asString();
+        item.completion_date = result["completion_date"].asString();
+        item.theatricalrelease = result["theatricalrelease"].asString();
+        item.dvdrelease = result["dvdrelease"].asString();
+        item.download = result["download"].asString();
+        CVariant availability = result["availability"];
+        item.availability_to = availability["to"].asString();
+        item.availability_from = availability["from"].asString();
+
+        CVariant files = result["files"];
+        if (files.isObject())
         {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject())
+          for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
           {
-            if (it->first == "720" || it->first == "1080" || it->first == "4K")
+            CVariant fileobj = it->second;
+            if (fileobj.isObject())
             {
-              TVAPI_PlaylistFile file;
-              file.type = it->first;
-              file.path = fileobj["path"].asString();
-              file.size = fileobj["size"].asString();
-              file.width = fileobj["width"].asString();
-              file.height = fileobj["height"].asString();
-              file.etag = fileobj["etag"].asString();
-              file.mime_type = fileobj["mime_type"].asString();
-              file.created_date = fileobj["created_date"].asString();
-              file.updated_date = fileobj["updated_date"].asString();
-              item.files.push_back(file);
+              if (it->first == "720" || it->first == "1080" || it->first == "4K")
+              {
+                TVAPI_PlaylistFile file;
+                file.type = it->first;
+                file.path = fileobj["path"].asString();
+                file.size = fileobj["size"].asString();
+                file.width = fileobj["width"].asString();
+                file.height = fileobj["height"].asString();
+                file.etag = fileobj["etag"].asString();
+                file.mime_type = fileobj["mime_type"].asString();
+                file.created_date = fileobj["created_date"].asString();
+                file.updated_date = fileobj["updated_date"].asString();
+                item.files.push_back(file);
+              }
             }
           }
-        }
-        // sort from low rez to high rez
-        std::sort(item.files.begin(), item.files.end(),
-          [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
-          {
-            return std_stoi(a.type) < std_stoi(b.type);
-          });
+          // sort from low rez to high rez
+          std::sort(item.files.begin(), item.files.end(),
+            [] (TVAPI_PlaylistFile const& a, TVAPI_PlaylistFile const& b)
+            {
+              return std_stoi(a.type) < std_stoi(b.type);
+            });
 
-        // now find the 'thumb'
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-        {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject() && it->first == "thumb")
+          // now find the 'thumb'
+          for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
           {
-            item.thumb.type = it->first;
-            item.thumb.path = fileobj["path"].asString();
-            item.thumb.size = fileobj["size"].asString();
-            item.thumb.width = fileobj["width"].asString();
-            item.thumb.height = fileobj["height"].asString();
-            item.thumb.etag = fileobj["etag"].asString();
-            item.thumb.mime_type = fileobj["mime_type"].asString();
-            item.thumb.created_date = fileobj["created_date"].asString();
-            item.thumb.updated_date = fileobj["updated_date"].asString();
+            CVariant fileobj = it->second;
+            if (fileobj.isObject() && it->first == "thumb")
+            {
+              item.thumb.type = it->first;
+              item.thumb.path = fileobj["path"].asString();
+              item.thumb.size = fileobj["size"].asString();
+              item.thumb.width = fileobj["width"].asString();
+              item.thumb.height = fileobj["height"].asString();
+              item.thumb.etag = fileobj["etag"].asString();
+              item.thumb.mime_type = fileobj["mime_type"].asString();
+              item.thumb.created_date = fileobj["created_date"].asString();
+              item.thumb.updated_date = fileobj["updated_date"].asString();
+            }
           }
-        }
 
-        // and find the 'poster'
-        for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
-        {
-          CVariant fileobj = it->second;
-          if (fileobj.isObject() && it->first == "thumb")
+          // and find the 'poster'
+          for (CVariant::const_iterator_map it = files.begin_map(); it != files.end_map(); ++it)
           {
-            item.poster.type = it->first;
-            item.poster.path = fileobj["path"].asString();
-            item.poster.size = fileobj["size"].asString();
-            item.poster.width = fileobj["width"].asString();
-            item.poster.height = fileobj["height"].asString();
-            item.poster.etag = fileobj["etag"].asString();
-            item.poster.mime_type = fileobj["mime_type"].asString();
-            item.poster.created_date = fileobj["created_date"].asString();
-            item.poster.updated_date = fileobj["updated_date"].asString();
+            CVariant fileobj = it->second;
+            if (fileobj.isObject() && it->first == "thumb")
+            {
+              item.poster.type = it->first;
+              item.poster.path = fileobj["path"].asString();
+              item.poster.size = fileobj["size"].asString();
+              item.poster.width = fileobj["width"].asString();
+              item.poster.height = fileobj["height"].asString();
+              item.poster.etag = fileobj["etag"].asString();
+              item.poster.mime_type = fileobj["mime_type"].asString();
+              item.poster.created_date = fileobj["created_date"].asString();
+              item.poster.updated_date = fileobj["updated_date"].asString();
+            }
           }
-        }
 
+        }
+        playlistItems.items.push_back(item);
       }
-      playlistItems.items.push_back(item);
-    }
 
-    return true;
+      return true;
+    }
+  }
+  // new ENVOI API
+  else
+  {
+
   }
 
   return false;

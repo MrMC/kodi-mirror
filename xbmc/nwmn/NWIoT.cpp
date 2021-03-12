@@ -1193,6 +1193,10 @@ void CNWIoT::Process()
               int apiVersion = event->State->View().GetInteger("apiVersion");
               CNWClient* client = CNWClient::GetClient();
               client->SetApiVersion(apiVersion);
+              client->ClearLocalPlayer();
+              client->ResetStartupState();
+              client->Startup(true, true);
+              
               CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - apiVersion requested is %i", apiVersion);
 
               Sleep(200);

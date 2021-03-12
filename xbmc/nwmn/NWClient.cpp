@@ -57,6 +57,8 @@
 
 #include "settings/SettingsComponent.h"
 
+#include "nwmn/NWIoT.h"
+
 // temp until access moves to core
 #if defined(TARGET_ANDROID)
 #include "platform/android/jni/Context.h"
@@ -1275,70 +1277,81 @@ bool CNWClient::DoAuthorize()
     m_activate.apiSecret = "HtqhPrk3JyvX5bDSay75OY1RHTvGAhxwg51Kh7KJ";
   }
 */
-  if (!HasInternet())
-    return !m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty();
 
-  std::string code = "";
-  const std::string header = "Enter Activation Code";
-
-  if (CGUIKeyboardFactory::ShowAndGetInput(code, CVariant{header}, false))
+  if (GetApiVersion() == 2)
   {
-    size_t test_url_pos = code.find("test://");
-    if (test_url_pos == std::string::npos)
-      test_url_pos = code.find("TEST://");
+    if (!HasInternet())
+      return !m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty();
 
-    if (test_url_pos != std::string::npos)
-    {
-      // if we find code starts with test site url, switch to test site
-      TVAPI_SetURLBASE(kTVAPI_URLBASE_TESTSITE);
-      code.erase(test_url_pos, strlen("TEST://"));
-    }
-    else
-    {
-      TVAPI_SetURLBASE(kTVAPI_URLBASE);
-    }
+    std::string code = "";
+    const std::string header = "Enter Activation Code";
 
-    TVAPI_Activate activate;
-    activate.code = code;
-#if defined(TARGET_ANDROID)
-    activate.application_id = jni::CJNISettingsSecure::getString(CJNIContext::getContentResolver(), jni::CJNISettingsSecure::ANDROID_ID);
-#else
-//    activate.application_id = CDarwinUtils::GetHardwareUUID();
-#endif
+    if (CGUIKeyboardFactory::ShowAndGetInput(code, CVariant{header}, false))
+    {
+      size_t test_url_pos = code.find("test://");
+      if (test_url_pos == std::string::npos)
+        test_url_pos = code.find("TEST://");
 
-    // davilla, check if this is okay?
-    activate.application_id = StringUtils::CreateUUID();
-
-    if (code.find("NWMNDEMO4K") != std::string::npos)
-    {
-      m_PlayerInfo.apiKey = "wAE/V6Gq3X3h0ZOjcK/A";
-      m_PlayerInfo.apiSecret = "dMLudiHXRKc18ZJXFk4o7pyhaSww41/kvnjbmc4L";
-      TVAPI_SetURLBASE(kTVAPI_URLBASE);
-      SaveLocalPlayer(m_strHome, m_PlayerInfo);
-      return true;
-    }
-    else if (code.find("NWMNDEMO") != std::string::npos)
-    {
-      // special case for code of 'NWMNDEMO'
-      m_PlayerInfo.apiKey = "LbpCC91TBDsoHExRxvtV";
-      m_PlayerInfo.apiSecret = "RN16RS1PUZVt8xgW+URBjU0o/ZXcdLWUDA45v2qQ";
-      TVAPI_SetURLBASE(kTVAPI_URLBASE_TESTSITE);
-      SaveLocalPlayer(m_strHome, m_PlayerInfo);
-      return true;
-    }
-    else
-    {
-      if (TVAPI_DoActivate(activate))
+      if (test_url_pos != std::string::npos)
       {
-        m_PlayerInfo.apiKey = activate.apiKey;
-        m_PlayerInfo.apiSecret = activate.apiSecret;
-        TVAPI_Status  status;
-        status.apiKey = m_PlayerInfo.apiKey;
-        status.apiSecret = m_PlayerInfo.apiSecret;
+        // if we find code starts with test site url, switch to test site
+        TVAPI_SetURLBASE(kTVAPI_URLBASE_TESTSITE);
+        code.erase(test_url_pos, strlen("TEST://"));
+      }
+      else
+      {
+        TVAPI_SetURLBASE(kTVAPI_URLBASE);
+      }
+
+      TVAPI_Activate activate;
+      activate.code = code;
+  #if defined(TARGET_ANDROID)
+      activate.application_id = jni::CJNISettingsSecure::getString(CJNIContext::getContentResolver(), jni::CJNISettingsSecure::ANDROID_ID);
+  #else
+  //    activate.application_id = CDarwinUtils::GetHardwareUUID();
+  #endif
+
+      // davilla, check if this is okay?
+      activate.application_id = StringUtils::CreateUUID();
+
+      if (code.find("NWMNDEMO4K") != std::string::npos)
+      {
+        m_PlayerInfo.apiKey = "wAE/V6Gq3X3h0ZOjcK/A";
+        m_PlayerInfo.apiSecret = "dMLudiHXRKc18ZJXFk4o7pyhaSww41/kvnjbmc4L";
+        TVAPI_SetURLBASE(kTVAPI_URLBASE);
         SaveLocalPlayer(m_strHome, m_PlayerInfo);
-        return TVAPI_GetStatus(status);
+        return true;
+      }
+      else if (code.find("NWMNDEMO") != std::string::npos)
+      {
+        // special case for code of 'NWMNDEMO'
+        m_PlayerInfo.apiKey = "LbpCC91TBDsoHExRxvtV";
+        m_PlayerInfo.apiSecret = "RN16RS1PUZVt8xgW+URBjU0o/ZXcdLWUDA45v2qQ";
+        TVAPI_SetURLBASE(kTVAPI_URLBASE_TESTSITE);
+        SaveLocalPlayer(m_strHome, m_PlayerInfo);
+        return true;
+      }
+      else
+      {
+        if (TVAPI_DoActivate(activate))
+        {
+          m_PlayerInfo.apiKey = activate.apiKey;
+          m_PlayerInfo.apiSecret = activate.apiSecret;
+          TVAPI_Status  status;
+          status.apiKey = m_PlayerInfo.apiKey;
+          status.apiSecret = m_PlayerInfo.apiSecret;
+          SaveLocalPlayer(m_strHome, m_PlayerInfo);
+          return TVAPI_GetStatus(status);
+        }
       }
     }
+  }
+  else
+  {
+    if (!IsAuthorized())
+      return CNWIoT::GetInstance().DoAuthorize();
+    else
+      return true;
   }
 
   CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, "Activation Failed/Cancelled", "", 4000, false);
@@ -1347,18 +1360,25 @@ bool CNWClient::DoAuthorize()
 
 bool CNWClient::IsAuthorized()
 {
-  if (!HasInternet())
-    return !m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty();
-
-  if (!m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty())
+  if (GetApiVersion() == 2)
   {
-    TVAPI_Status  status;
-    status.apiKey = m_PlayerInfo.apiKey;
-    status.apiSecret = m_PlayerInfo.apiSecret;
-    return TVAPI_GetStatus(status);
+    if (!HasInternet())
+      return !m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty();
+
+    if (!m_PlayerInfo.apiKey.empty() && !m_PlayerInfo.apiSecret.empty())
+    {
+      TVAPI_Status  status;
+      status.apiKey = m_PlayerInfo.apiKey;
+      status.apiSecret = m_PlayerInfo.apiSecret;
+      return TVAPI_GetStatus(status);
+    }
+    else
+      return false;
   }
   else
-    return false;
+  {
+    return CNWIoT::GetInstance().IsAuthorized();
+  }
 }
 
 bool CNWClient::AllowExit()
@@ -1451,4 +1471,9 @@ int CNWClient::GetApiVersion()
   int version = TVAPI_GetApiVersion();
   CLog::Log(LOGINFO, "**NW** - GetApiVersion() ApiVersion is %i...",version);
   return version;
+}
+
+void CNWClient::ClearLocalPlayer()
+{
+  RemoveLocalPlayer(m_strHome);
 }
