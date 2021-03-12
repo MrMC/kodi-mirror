@@ -30,6 +30,7 @@
 
 const std::string kTVAPI_URLBASE = "https://www.nationwidemember.com/tv-api/1/";
 const std::string kTVAPI_URLBASE_TESTSITE = "http://test.nationwidemember.com/tv-api/1/";
+const std::string kTVAPI_UPDATEURL = "https://cdn.iot-dev.envoi.cloud/json/update.json";
 
 // ---------------------------------------------
 // ---------------------------------------------

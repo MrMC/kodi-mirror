@@ -1393,7 +1393,7 @@ bool CNWClient::CheckUpdate()
   updateFolder = CSpecialProtocol::TranslatePath("special://nwmn/downloads/");
 #endif
 
-  CURL url(updateURL);
+  CURL url(kTVAPI_UPDATEURL);
   XFILE::CCurlFile curl;
   CVariant reply;
   std::string strResponse;
