@@ -3283,6 +3283,7 @@ void CApplication::OnPlayBackStopped()
   {
     data["assetID"] = m_itemCurrentFile->GetProperty("assetId").asString();;
     data["format"] = m_itemCurrentFile->GetProperty("video_format").asString();
+    data["assetGroupID"] = m_itemCurrentFile->GetProperty("assetGroupID").asString();
   }
   CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "OnStop",
                                                      m_itemCurrentFile, data);

@@ -235,6 +235,7 @@ void CNWPlayer::Process()
               item->SetProperty("Membernet", true);
               item->SetProperty("video_format", asset.type);
               item->SetProperty("assetId", asset.id);
+              item->SetProperty("assetGroupID", asset.group_id);
               item->GetVideoInfoTag()->m_strTitle = asset.name;
               item->GetVideoInfoTag()->m_streamDetails.Reset();
               item->GetVideoInfoTag()->m_iDbId = -1;

@@ -97,6 +97,7 @@ bool CGUIWindowMNDemand::OnMessage(CGUIMessage& message)
         pItem->SetProperty("Membernet", true);
         pItem->SetProperty("video_format", asset.type);
         pItem->SetProperty("assetId", asset.id);
+        pItem->SetProperty("assetGroupID", asset.group_id);
         pItem->GetVideoInfoTag()->m_strTitle = asset.name;
         pItem->GetVideoInfoTag()->m_streamDetails.Reset();
         CMediaSettings::GetInstance().SetMediaStartWindowed(false);

@@ -297,6 +297,7 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         // { machineId: ‘’, eventType: ‘’, details: { } }
         CVariant payloadObject;
         payloadObject["details"]["assetId"] = assetID;
+        payloadObject["details"]["assetGroupID"] =currentFile.GetProperty("assetGroupID").asString();
         payloadObject["details"]["raw"] = payload;
         notifyEvent("playbackStart", payloadObject);
       }
@@ -326,6 +327,7 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         */
         CVariant payloadObject;
         payloadObject["details"]["assetId"] = assetID;
+        payloadObject["details"]["assetGroupID"] = data["assetGroupID"].asString();
         payloadObject["details"]["raw"] = payload;
         notifyEvent("playbackStop", payloadObject);
       }
