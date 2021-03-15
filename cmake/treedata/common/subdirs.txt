@@ -46,6 +46,7 @@ xbmc/listproviders                              listproviders
 xbmc/messaging                                  messaging
 xbmc/messaging/helpers                          messagingHelpers
 xbmc/nwmn                                       nwmn
+xbmc/nwmn/speedtest                             nwmn_speedtest
 xbmc/pictures                                   pictures
 xbmc/platform                                   platform
 xbmc/playlists                                  playlists
