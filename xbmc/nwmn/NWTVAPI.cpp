@@ -253,8 +253,6 @@ bool TVAPI_GetMachine(TVAPI_Machine &machine)
       std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
       XFILE::CCurlFile curlfile;
       curlfile.SetTimeout(10);
-//      std::string urlBase = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/manageEncoders";
-      std::string token = "55de82c571202c21601dbd58a3b745c8e619d5e585fb8c3422fc0527cad82937c70dc197cadbc31e80de743aba1094c7ac11a6b4463fe025ecaeace74766d824e9192e98a5b88dfafeb0e5defda85800dc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2";
       CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
       curl.SetProtocolOption("seekable", "0");
       curl.SetProtocolOption("Cache-Control", "no-cache");
@@ -264,7 +262,7 @@ bool TVAPI_GetMachine(TVAPI_Machine &machine)
       curl.SetOption("devicetype", "player");
       curl.SetOption("playBackUrls", "true");
       curl.SetOption("ethernetMACaddress", playerMACAddress);
-      curl.SetOption("token", token);
+      curl.SetOption("token", kTVAPI_URLENVOITOKEN);
       std::string strResponse;
       std::string testURL = curl.Get();
       if (curlfile.Post(curl.Get(), "",strResponse))
@@ -503,9 +501,47 @@ bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id)
   // new ENVOI API
   else
   {
-    std::vector<std::string> plists = StringUtils::Split(playlist_id, ',');
-  }
+//    std::vector<std::string> plists = StringUtils::Split(playlist_id, ',');
+    if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+    {
+      std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+      XFILE::CCurlFile curlfile;
+      curlfile.SetTimeout(10);
+      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
+      curl.SetProtocolOption("seekable", "0");
+      curl.SetProtocolOption("Cache-Control", "no-cache");
+      curl.SetProtocolOption("Content-Type", "application/json");
+      curl.SetOption("appname", "membernet");
+      curl.SetOption("activity", "fetch");
+      curl.SetOption("devicetype", "player");
+      curl.SetOption("playBackUrls", "true");
+      curl.SetOption("ethernetMACaddress", playerMACAddress);
+      curl.SetOption("token", kTVAPI_URLENVOITOKEN);
+      std::string strResponse;
+      std::string testURL = curl.Get();
+      if (curlfile.Post(curl.Get(), "",strResponse))
+      {
+        #if ENABLE_TVAPI_DEBUGLOGS
+        CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
+        #endif
 
+        CVariant reply;
+        CJSONVariantParser::Parse(strResponse, reply);
+        CVariant results(CVariant::VariantTypeArray);
+        results = reply["result"]["data"][0]["playlist"];
+        for (CVariant::const_iterator_array it = results.begin_array(); it != results.end_array(); it++)
+        {
+          CVariant asset(CVariant::VariantTypeObject);
+          asset = *it;
+          TVAPI_CategoryId category;
+          category.id = asset["id"].asString();
+          category.name = asset["name"].asString();
+          playlist.categories.push_back(category);
+        }
+        return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -638,7 +674,91 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
   // new ENVOI API
   else
   {
+    if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+    {
+      std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+      XFILE::CCurlFile curlfile;
+      curlfile.SetTimeout(10);
+      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
+      curl.SetProtocolOption("seekable", "0");
+      curl.SetProtocolOption("Cache-Control", "no-cache");
+      curl.SetProtocolOption("Content-Type", "application/json");
+      curl.SetOption("appname", "membernet");
+      curl.SetOption("activity", "fetch");
+      curl.SetOption("devicetype", "player");
+      curl.SetOption("playBackUrls", "true");
+      curl.SetOption("ethernetMACaddress", playerMACAddress);
+      curl.SetOption("token", kTVAPI_URLENVOITOKEN);
+      std::string strResponse;
+      std::string testURL = curl.Get();
+      if (curlfile.Post(curl.Get(), "",strResponse))
+      {
+        #if ENABLE_TVAPI_DEBUGLOGS
+        CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
+        #endif
 
+        CVariant reply;
+        CJSONVariantParser::Parse(strResponse, reply);
+
+
+        CVariant plMap;
+        CVariant resultsPL(CVariant::VariantTypeArray);
+        resultsPL = reply["result"]["data"][0]["playlist"];
+        for (CVariant::const_iterator_array it = resultsPL.begin_array(); it != resultsPL.end_array(); it++)
+        {
+          CVariant asset(CVariant::VariantTypeObject);
+          asset = *it;
+          plMap[asset["name"].asString()] = asset["id"].asString();
+        }
+
+        CVariant results(CVariant::VariantTypeArray);
+        results = reply["result"]["data"][0];
+        CVariant playlistUrls = results["playlistUrls"];
+        std::string strResponsePL;
+        for (size_t i = 0; i < playlistUrls.size(); i++)
+        {
+          CVariant assetValues = playlistUrls[i];
+
+          TVAPI_PlaylistItem item;
+          item.id = assetValues["assetid"].asString();;
+          item.name = "";
+          item.tv_category_id = plMap[assetValues["playlistname"].asString()].asString();
+          item.description = "";
+          item.created_date = "2019-08-14";
+          item.updated_date = "2019-08-14";
+          item.completion_date = "0000-00-00";
+          item.theatricalrelease = "0000-00-00";
+          item.dvdrelease = "0000-00-00";
+          item.download = "1";
+          item.availability_to = "2029-08-14 00:00:00";
+          item.availability_from = "2019-08-14 10:42:00";
+
+
+          TVAPI_PlaylistFile file;
+          file.path = assetValues["Mp4_proxy_URL"].asString();
+          if (assetValues.isMember("size"))
+          {
+            file.size = assetValues["size"].asString();
+          }
+          else
+          {
+            // bad bad idea....
+            CURL curlFile(file.path);
+            std::string strResponse;
+            struct __stat64 statBuffer;
+            XFILE::CCurlFile curlfile;
+            if (curlfile.Stat(curlFile, &statBuffer) == 0)
+            {
+              long size = statBuffer.st_size;
+              file.size = StringUtils::Format("%d",size);
+            }
+          }
+          item.files.push_back(file);
+          playlistItems.items.push_back(item);
+        }
+        return true;
+      }
+    }
   }
 
   return false;

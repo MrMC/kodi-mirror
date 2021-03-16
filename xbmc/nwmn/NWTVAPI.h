@@ -31,8 +31,9 @@
 //const std::string kTVAPI_URLBASE = "https://api.iot-dev.envoi.cloud/tv-api/1/";
 const std::string kTVAPI_URLBASE = "http://www.nationwidemember.com/tv-api/1/";
 const std::string kTVAPI_URLBASE_TESTSITE = "http://test.nationwidemember.com/tv-api/1/";
-//const std::string kTVAPI_URLBASEENVOI = "https://api.iot-dev.envoi.cloud/tv-api/3/";
-const std::string kTVAPI_URLBASEENVOI = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/";
+const std::string kTVAPI_URLBASEENVOI = "https://api.iot-dev.envoi.cloud/tv-api/3/";
+//const std::string kTVAPI_URLBASEENVOI = "https://8x4rpewbtf.execute-api.us-east-1.amazonaws.com/latest/";
+const std::string kTVAPI_URLENVOITOKEN = "55de82c571202c21601dbd58a3b745c8e619d5e585fb8c3422fc0527cad82937c70dc197cadbc31e80de743aba1094c7ac11a6b4463fe025ecaeace74766d824e9192e98a5b88dfafeb0e5defda85800dc9ecebf9aa3958782cfdd8903dd8c7ca84696faf03d39d5b24ac72186efb94ea0748613204cdf7006115acd07d31dd2";
 
 const std::string kTVAPI_UPDATEURL = "https://cdn.iot-dev.envoi.cloud/json/update.json";
 
