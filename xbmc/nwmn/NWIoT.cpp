@@ -998,7 +998,7 @@ void CNWIoT::Process()
     return;
   }
 
-  Aws::Crt::Io::DefaultHostResolver defaultHostResolver(eventLoopGroup, 1, 5);
+  Aws::Crt::Io::DefaultHostResolver defaultHostResolver(eventLoopGroup, 3, 300);
   Io::ClientBootstrap bootstrap(eventLoopGroup, defaultHostResolver);
 
   if (!bootstrap)
@@ -1323,39 +1323,31 @@ void CNWIoT::Process()
       m_heartbeatTimer.StartZero();
     }
 
-    if (m_payload.size() > 0)
     {
       CSingleLock lock(m_payloadLock);
-      for (int i = 0; i < m_payload.size(); i++)
+      if (m_payload.size() > 0)
       {
-        std::string msg = m_payload[i];
-        std::promise<void> publishCompletedPromise;
-        ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)msg.c_str(), msg.length());
-        ByteBuf *payloadPtr = &payload;
-
-//        // reset payload to "" so we dont go in here until
-//        // new msg has been set by announcer
-//        CNWIoT::setPayload("");
-        auto onPublishComplete = [&](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
+        for (std::vector<std::string>::iterator it = m_payload.begin(); it != m_payload.end(); ++it)
         {
-          aws_byte_buf_clean_up(payloadPtr);
-
-          if (packetId)
+          std::string msg = *it;
+          ByteBuf payload = ByteBufNewCopy(DefaultAllocator(), (const uint8_t *)msg.c_str(), msg.length());
+          ByteBuf *payloadPtr = &payload;
+          auto onPublishComplete = [payloadPtr](Mqtt::MqttConnection &, uint16_t packetId, int errorCode)
           {
-            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
-          }
-          else
-          {
-            CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
-          }
-          publishCompletedPromise.set_value();
-        };
-        connection->Publish(dtopic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
-        publishCompletedPromise.get_future().wait();
-
-        Sleep(1);
+            aws_byte_buf_clean_up(payloadPtr);
+            if (packetId)
+            {
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation on packetId %d Succeeded", packetId);
+            }
+            else
+            {
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Operation failed with error %s", aws_error_debug_str(errorCode));
+            }
+          };
+          connection->Publish(dtopic.c_str(), AWS_MQTT_QOS_AT_LEAST_ONCE, false, payload, onPublishComplete);
+        }
+        m_payload.clear();
       }
-      m_payload.clear();
     }
   }
 
@@ -1393,6 +1385,6 @@ void CNWIoT::notifyEvent(std::string type, CVariant details)
   payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
   payloadObject["details"] = details["details"];
   std::string payloadStr;
-  CJSONVariantWriter::Write(payloadObject, payloadStr, false);
-  CNWIoT::setPayload(payloadStr);
+  CJSONVariantWriter::Write(payloadObject, payloadStr, true);
+  setPayload(payloadStr);
 }
