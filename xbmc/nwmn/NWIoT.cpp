@@ -963,7 +963,6 @@ void CNWIoT::Process()
             connectionCompletedPromise.set_value(true);
             connected = true;
             CVariant payloadObject;
-//            payloadObject["details"] = "";
             payloadObject["details"]["mnversion"] = CSysInfo::GetVersionShort();
             notifyEvent("deviceConnected", payloadObject);
           }
@@ -1309,6 +1308,9 @@ void CNWIoT::Process()
       subscribeFinishedPromise.get_future().wait();
 
   }
+
+
+
 
   while (!m_bStop)
   {
