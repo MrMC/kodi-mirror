@@ -483,6 +483,13 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/scripts/common/AddonHelpers.cmake
 configure_file(${CMAKE_SOURCE_DIR}/cmake/scripts/common/AddOptions.cmake
                ${CORE_BUILD_DIR}/lib/${APP_NAME_LC}/AddOptions.cmake COPYONLY)
 
+if(XCODE_DEVELOPMENT_TEAM)
+  list(APPEND final_message "Using ${XCODE_DEVELOPMENT_TEAM} as XCODE development team")
+  set_property (TARGET ${APP_NAME_LC} PROPERTY XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development")
+  set_property (TARGET ${APP_NAME_LC} PROPERTY XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "${XCODE_DEVELOPMENT_TEAM}")
+  set_property (TARGET ${APP_NAME_LC} PROPERTY XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "tv.mrmc.${APP_NAME_LC}")
+endif()
+
 # Status
 message(STATUS "#---- CONFIGURATION ----#")
 foreach(msg ${final_message})

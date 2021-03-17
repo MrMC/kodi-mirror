@@ -148,6 +148,10 @@ Generate Xcode project as per configure command in **[Configure and build tools 
 ```
 make -C tools/depends/target/cmakebuildsys BUILD_DIR=$HOME/kodi-build GEN=Xcode
 ```
+you can pass XCODE_DEVELOPMENT_TEAM to it as well
+```
+make -C tools/depends/target/cmakebuildsys BUILD_DIR=$HOME/kodi-build GEN=Xcode XCODE_DEVELOPMENT_TEAM="8U6ANON2Q6"
+```
 
 **TIP:** BUILD_DIR can be omitted, and project will be created in $HOME/kodi/build
 Change all relevant paths onwards if omitted.
@@ -165,6 +169,12 @@ Generate Xcode project:
 ```
 /Users/Shared/xbmc-depends/x86_64-darwin17.5.0-native/bin/cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=/Users/Shared/xbmc-depends/macosx10.13_x86_64-target-debug/share/Toolchain.cmake ../kodi
 ```
+
+you can pass XCODE_DEVELOPMENT_TEAM to it as well
+```
+/Users/Shared/xbmc-depends/x86_64-darwin17.5.0-native/bin/cmake -G Xcode -DCMAKE_TOOLCHAIN_FILE=/Users/Shared/xbmc-depends/macosx10.13_x86_64-target-debug/share/Tool -DXCODE_DEVELOPMENT_TEAM="8U6ANON2Q6"
+```
+
 
 **WARNING:** The toolchain file location differs depending on SDK version. You have to replace `x86_64-darwin17.5.0-native` and `macosx10.13_x86_64-target-debug` in the paths above with the correct ones on your system.
 
