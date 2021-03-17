@@ -1164,15 +1164,14 @@ void CNWIoT::Process()
             {
               if (event->State->View().GetBool("reboot"))
               {
+                CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
                 b_changeShadowValue(shadowClient, strThingName, "reboot", false);
-                StopThread();
                 Sleep(2000);
                 // reboot the machine
                 // disabled for testing on OSX
 #ifndef TARGET_DARWIN
                 system("/usr/bin/systemctl reboot");
 #endif
-                CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Reboot");
               }
               else
                 b_changeShadowValue(shadowClient, strThingName, "reboot", SHADOW_REBOOT_VALUE_DEFAULT);
