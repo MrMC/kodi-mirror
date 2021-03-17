@@ -118,6 +118,7 @@ endforeach()
 
 # Required dependencies. Keep in alphabetical order please
 set(required_deps ASS
+                  AWS
                   Cdio
                   CrossGUID
                   Curl
