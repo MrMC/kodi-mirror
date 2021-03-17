@@ -12,7 +12,10 @@
 
 find_path(AWS_INCLUDE_DIR NAMES aws)
 
-# find_library(AWS_0_LIBRARY NAMES s2n libs2n PATH_SUFFIXES aws)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  find_library(AWS_0_LIBRARY NAMES s2n libs2n PATH_SUFFIXES aws)
+endif()
+
 find_library(AWS_1_LIBRARY NAMES IotIdentity-cpp libIotIdentity-cpp PATH_SUFFIXES aws)
 find_library(AWS_2_LIBRARY NAMES Discovery-cpp libDiscovery-cpp PATH_SUFFIXES aws)
 find_library(AWS_3_LIBRARY NAMES IotShadow-cpp libIotShadow-cpp PATH_SUFFIXES aws)
@@ -62,6 +65,9 @@ if(AWS_FOUND)
                     ${AWS_9_LIBRARY} ${AWS_10_LIBRARY}
                     ${AWS_11_LIBRARY} ${AWS_12_LIBRARY}
                     ${AWS_13_LIBRARY} ${AWS_14_LIBRARY})
+  if(CMAKE_SYSTEM_NAME MATCHES "Linux")                  
+    list(APPEND AWS_LIBRARIES ${AWS_0_LIBRARY})
+  endif()             
   set(AWS_INCLUDE_DIRS ${AWS_INCLUDE_DIR})
   set(AWS_DEFINITIONS -DHAS_AWS=1)
 endif()
