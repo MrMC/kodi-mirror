@@ -219,6 +219,7 @@ public:
    \return True if the path has been updated/changed otherwise false
    */
   static bool UpdateUrlEncoding(std::string &strFilename);
+  static std::string URLEncodePath(const std::string &path);
 
 private:
   static std::string resolvePath(const std::string &path);

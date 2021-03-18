@@ -735,7 +735,9 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
 
 
           TVAPI_PlaylistFile file;
-          file.path = assetValues["Mp4_proxy_URL"].asString();
+          CURL curltemp(assetValues["Mp4_proxy_URL"].asString());
+          curltemp.SetFileName(URIUtils::URLEncodePath(curltemp.GetFileName()));
+          file.path = curltemp.Get();
           if (assetValues.isMember("size"))
           {
             file.size = assetValues["size"].asString();
