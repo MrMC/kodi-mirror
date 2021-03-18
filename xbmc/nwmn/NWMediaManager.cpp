@@ -267,7 +267,7 @@ void CNWMediaManager::Process()
       }
       else
       {
-        CLog::Log(LOGERROR, "**NW** - CNWMediaManager::Process download/save failed or canceled, just requeue");
+        CLog::Log(LOGDEBUG, "**NW** - CNWMediaManager::Process download/save failed or canceled, just requeue");
         // download/save failed, just requeue
         download_lock.Enter();
         m_download.push_back(asset);
