@@ -417,7 +417,7 @@
 				<textcolor>white</textcolor>
 				<align>center</align>
 				<aligny>center</aligny>
-				<label>MemberNet TV Information</label>
+				<label>Mediasign TV Information</label>
 			</control>
 			<control type="group">
 				<posx>10</posx>
