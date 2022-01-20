@@ -89,6 +89,37 @@ bool LessThanVersion(const std::string& a,const std::string& b)
     return std::lexicographical_compare(parsedA, parsedA + 4, parsedB, parsedB + 4);
 }
 
+
+bool compareVersion(string version1, string version2) {
+    auto v1 = split(version1, '.');
+    auto v2 = split(version2, '.');
+    int max = v1.size() > v2.size() ? v1.size() : v2.size();
+    // pad the shorter version string
+    if (v1.size() != max) {
+        for (int i = max - v1.size(); i --; ) {
+            v1.push_back("0");
+        }
+    } else {
+        for (int i = max - v2.size(); i --; ) {
+            v2.push_back("0");
+        }
+    }
+    for (int i = 0; i < max; i ++) {
+        int n1 = stoi(v1[i]);
+        int n2 = stoi(v2[i]);
+        if (n1 > n2)
+        {
+            return false;
+        }
+        else if (n1 < n2)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 template <typename T>
 static std::string std_to_string(T value)
 {
@@ -387,14 +418,6 @@ void CNWClient::Process()
   CLog::Log(LOGDEBUG, "**NW** - CNWClient::Process Started");
   #endif
 
-  /// check for update every 6 hours?? and check on every startup
-  if (!m_updaterRunning && (!m_updateTimer.IsRunning() ||
-      (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f)))
-  {
-    m_updateTimer.StartZero();
-    CNWClient::CheckUpdate();
-  }
-
   SendPlayerStatus(kTVAPI_Status_On);
 
   while (!m_bStop)
@@ -407,6 +430,14 @@ void CNWClient::Process()
     if (m_Startup)
       ManageStartupDialog();
 
+    /// check for update every 6 hours?? and check on every startup
+    if (!m_updaterRunning && (!m_updateTimer.IsRunning() ||
+        (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f)))
+    {
+      m_updateTimer.StartZero();
+      CNWClient::CheckUpdate();
+    }
+    
     CDateTime time = CDateTime::GetCurrentDateTime();
     if (m_StartupState != ClientUseUpdateInterval || time >= m_NextUpdateTime)
     {
@@ -1428,7 +1459,7 @@ bool CNWClient::CheckUpdate()
     std::string updateVersion  = reply["update"]["version"].asString();
     bool        forceUpdate    = reply["update"]["forceUpdate"].asBoolean();
 
-    if (forceUpdate || LessThanVersion(appVersion, updateVersion))
+    if (forceUpdate || compareVersion(appVersion, updateVersion))
     {
       m_dlgProgress->SetLine(0, StringUtils::Format("Downloading firmware update"));
       m_dlgProgress->SetLine(1, StringUtils::Format("Please wait..."));
