@@ -90,7 +90,7 @@ bool LessThanVersion(const std::string& a,const std::string& b)
 }
 
 
-bool compareVersion(string version1, string version2) {
+bool compareVersion(std::string version1, std::string version2) {
     auto v1 = split(version1, '.');
     auto v2 = split(version2, '.');
     int max = v1.size() > v2.size() ? v1.size() : v2.size();
