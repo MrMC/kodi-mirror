@@ -105,8 +105,8 @@ bool compareVersion(std::string version1, std::string version2) {
         }
     }
     for (int i = 0; i < max; i ++) {
-        int n1 = stoi(v1[i]);
-        int n2 = stoi(v2[i]);
+        int n1 = std::stoi(v1[i]);
+        int n2 = std::stoi(v2[i]);
         if (n1 > n2)
         {
             return false;
