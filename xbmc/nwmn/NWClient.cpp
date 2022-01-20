@@ -89,8 +89,8 @@ bool LessThanVersion(const std::string& a,const std::string& b)
     return std::lexicographical_compare(parsedA, parsedA + 4, parsedB, parsedB + 4);
 }
 
-vector<string> split(const string& s, char d) {
-    vector<string> r;
+std::vector<std::string> split(const std::string& s, char d) {
+    std::vector<std::string> r;
     int j = 0;
     for (int i = 0; i < s.length(); i ++) {
         if (s[i] == d) {
