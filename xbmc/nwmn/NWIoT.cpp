@@ -1180,10 +1180,15 @@ void CNWIoT::Process()
             {
               if (event->State->View().GetBool("forceFirmwareUpdate"))
               {
+                std::string updateURL;
                 b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
                 CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - forceFirmwareUpdate");
                 CNWClient* client = CNWClient::GetClient();
-                client->CheckUpdate();
+                if (event->State->View().ValueExists("forceFirmwareUpdateURL"))
+                {
+                  updateURL = event->State->View().GetString("forceFirmwareUpdateURL");
+                }
+                client->CheckUpdate(updateURL);
               }
               else
                 b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);

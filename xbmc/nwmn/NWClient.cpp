@@ -444,7 +444,7 @@ void CNWClient::Process()
 
     /// check for update every 6 hours?? and check on every startup
     if (!m_updaterRunning && (!m_updateTimer.IsRunning() ||
-        (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600.0f)))
+        (m_updateTimer.IsRunning() && m_updateTimer.GetElapsedMilliseconds() > 21600000.0f)))
     {
       m_updateTimer.StartZero();
       CNWClient::CheckUpdate();
@@ -1444,7 +1444,7 @@ bool CNWClient::AllowExit()
 //  return true;
 }
 
-bool CNWClient::CheckUpdate()
+bool CNWClient::CheckUpdate(std::string updateURL)
 {
   m_updaterRunning = true;
   std::string updateFolder;
@@ -1455,7 +1455,9 @@ bool CNWClient::CheckUpdate()
   updateFolder = CSpecialProtocol::TranslatePath("special://nwmn/downloads/");
 #endif
 
-  CURL url(kTVAPI_UPDATEURL);
+  if (updateURL.empty())
+    updateURL = kTVAPI_UPDATEURL;
+  CURL url(updateURL);
   XFILE::CCurlFile curl;
   CVariant reply;
   std::string strResponse;

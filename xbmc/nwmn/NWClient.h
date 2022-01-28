@@ -93,7 +93,7 @@ public:
   bool          DoAuthorize();
   bool          IsAuthorized();
   bool          AllowExit();
-  bool          CheckUpdate();
+  bool          CheckUpdate(std::string updateURL = "");
   void          SetApiVersion(int version);
   int           GetApiVersion();
   void          ResetStartupState() { m_StartupState = ClientFetchUpdatePlayer; };
