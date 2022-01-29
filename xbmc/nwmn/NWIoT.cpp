@@ -1186,7 +1186,9 @@ void CNWIoT::Process()
                 CNWClient* client = CNWClient::GetClient();
                 if (event->State->View().ValueExists("forceFirmwareUpdateURL"))
                 {
-                  updateURL = event->State->View().GetString("forceFirmwareUpdateURL");
+                  String const& aws_s = event->State->View().GetString("forceFirmwareUpdateURL");
+                  std::string s(aws_s.c_str(), aws_s.size());
+                  updateURL = s;
                 }
                 client->CheckUpdate(updateURL);
               }
