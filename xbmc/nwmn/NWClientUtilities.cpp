@@ -411,7 +411,7 @@ const std::string GetWiredMACAddress()
   for (std::vector<CNetworkInterface*>::const_iterator it = ifaces.begin(); it != ifaces.end(); ++it)
   {
 //      if (!(*it)->IsWireless())
-        return (*it)->GetMacAddress();
+        return CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   }
   return "00:00:00:00:00:00";
 }
@@ -422,7 +422,7 @@ const std::string GetWirelessMACAddress()
   for (std::vector<CNetworkInterface*>::const_iterator it = ifaces.begin(); it != ifaces.end(); ++it)
   {
 //    if ((*it)->IsWireless())
-      return (*it)->GetMacAddress();
+      return CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
   }
   return "00:00:00:00:00:00";
 }
