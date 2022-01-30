@@ -1195,6 +1195,36 @@ void CNWIoT::Process()
               else
                 b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
             }
+            if (event->State->View().ValueExists("enableSSH"))
+            {
+              std::string enableSshConf = "/storage/.cache/services/sshd.conf";
+              std::string disableSshConf = "/storage/.cache/services/sshd.disabled";
+              std::string strkeyContent = "SSH_ARGS=\"\"/nSSHD_DISABLE_PW_AUTH=false";
+              if (event->State->View().GetBool("enableSSH"))
+              {
+                if (!XFILE::CFile::Exists(enableSshConf))
+                {
+                  XFILE::CFile sshFile;
+                  sshFile.OpenForWrite(enableSshConf);
+                  sshFile.Write(strkeyContent.c_str(), strkeyContent.size());
+                  sshFile.Close();
+
+                  XFILE::CFile::Delete(disableSshConf);
+                }
+              }
+              else
+              {
+                if (!XFILE::CFile::Exists(disableSshConf))
+                {
+                  XFILE::CFile sshFile;
+                  sshFile.OpenForWrite(disableSshConf);
+                  sshFile.Write(strkeyContent.c_str(), strkeyContent.size());
+                  sshFile.Close();
+
+                  XFILE::CFile::Delete(enableSshConf);
+                }
+              }
+            }
             if (event->State->View().ValueExists("apiVersion"))
             {
               int apiVersion = event->State->View().GetInteger("apiVersion");
