@@ -1189,20 +1189,28 @@ void CNWIoT::Process()
                   String const& aws_s = event->State->View().GetString("forceFirmwareUpdateURL");
                   std::string s(aws_s.c_str(), aws_s.size());
                   updateURL = s;
+                  s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdateURL", event->State->View().GetString("forceFirmwareUpdateURL"));
+
                 }
                 client->CheckUpdate(updateURL);
               }
               else
                 b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
             }
-            if (event->State->View().ValueExists("enableSSH"))
+            if (event->State->View().KeyExists("enableSSH"))
             {
+              s_changeShadowValue(shadowClient, strThingName, "enableSSH", event->State->View().GetString("enableSSH"));
               std::string enableSshConf = "/storage/.cache/services/sshd.conf";
               std::string disableSshConf = "/storage/.cache/services/sshd.disabled";
-              std::string strkeyContent = "SSH_ARGS=\"\"/nSSHD_DISABLE_PW_AUTH=false";
-              if (event->State->View().GetBool("enableSSH"))
+#ifdef TARGET_DARWIN
+              enableSshConf = CSpecialProtocol::TranslatePath("special://nwmn/sshd.conf");
+              disableSshConf = CSpecialProtocol::TranslatePath("special://nwmn/sshd.disabled");
+#endif
+
+              std::string strkeyContent = "SSH_ARGS=\"\"\nSSHD_DISABLE_PW_AUTH=false\n";
+              if (event->State->View().GetString("enableSSH") == "1")
               {
-                if (!XFILE::CFile::Exists(enableSshConf))
+//                if (!XFILE::CFile::Exists(enableSshConf))
                 {
                   XFILE::CFile sshFile;
                   sshFile.OpenForWrite(enableSshConf);
@@ -1214,7 +1222,7 @@ void CNWIoT::Process()
               }
               else
               {
-                if (!XFILE::CFile::Exists(disableSshConf))
+//                if (!XFILE::CFile::Exists(disableSshConf))
                 {
                   XFILE::CFile sshFile;
                   sshFile.OpenForWrite(disableSshConf);
