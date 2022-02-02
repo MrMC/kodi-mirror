@@ -143,7 +143,7 @@ static void s_changeShadowValue(
     state.Reported = reported;
 
     Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
-    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    std::string playerMACAddress = GetNUCMACAddress();
     String uuid(playerMACAddress.c_str());
     updateShadowRequest.ClientToken = uuid;
     updateShadowRequest.ThingName = thingName;
@@ -181,7 +181,7 @@ static void i_changeShadowValue(
     state.Reported = reported;
 
     Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
-    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    std::string playerMACAddress = GetNUCMACAddress();
     String uuid(playerMACAddress.c_str());
     updateShadowRequest.ClientToken = uuid;
     updateShadowRequest.ThingName = thingName;
@@ -219,7 +219,7 @@ static void b_changeShadowValue(
     state.Reported = reported;
 
     Aws::Iotshadow::UpdateShadowRequest updateShadowRequest;
-    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    std::string playerMACAddress = GetNUCMACAddress();
     String uuid(playerMACAddress.c_str());
     updateShadowRequest.ClientToken = uuid;
     updateShadowRequest.ThingName = thingName;
@@ -387,7 +387,7 @@ void CNWIoT::MsgReceived(CVariant msgPayload)
   */
   if (!msgPayload.isNull())
   {
-    std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    std::string playerMACAddress = GetNUCMACAddress();
     if (msgPayload["type"].asString() == "machineAction" && msgPayload["machineId"] == playerMACAddress)
     {
       CVariant msgDetails = msgPayload["details"];
@@ -563,7 +563,7 @@ bool CNWIoT::DoAuthorize()
   String token;
   String endpoint;
   String certificatePath;
-  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  std::string playerMACAddress = GetNUCMACAddress();
   String clientId(playerMACAddress.c_str());
   String templateName = "MN";
   std::string strTemplateParameters = "{\"SerialNumber\":\"" + playerMACAddress + "\"}";
@@ -926,7 +926,7 @@ void CNWIoT::Process()
 
   CLog::Log(LOGDEBUG, "**MN** - CNWIoT::Process() - Completed 'DoAuthorize()' ");
 
-  std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+  std::string playerMACAddress = GetNUCMACAddress();
   std::string thingName = "MN_" + playerMACAddress;
   String aws_s(thingName.c_str(), thingName.size());
   strThingName = aws_s;
@@ -1426,7 +1426,7 @@ void CNWIoT::notifyEvent(std::string type, CVariant details)
   CDateTime time = CDateTime::GetCurrentDateTime();
   std::string playerMACAddress = "NA";
   if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
-    playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+    playerMACAddress = GetNUCMACAddress();
   payloadObject["machineId"] = playerMACAddress;
   payloadObject["type"] = type;
   payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();

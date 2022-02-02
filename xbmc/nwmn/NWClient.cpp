@@ -582,8 +582,8 @@ void CNWClient::GetPlayerInfo()
     m_PlayerInfo.description = machine.description;
     m_PlayerInfo.serial_number = machine.serial_number;
     m_PlayerInfo.warranty_number = machine.warranty_number;
-    m_PlayerInfo.macaddress = GetWiredMACAddress();
-    m_PlayerInfo.macaddress_wireless = GetWirelessMACAddress();
+    m_PlayerInfo.macaddress = GetNUCMACAddress();
+    m_PlayerInfo.macaddress_wireless = GetNUCMACAddress();
     m_PlayerInfo.hardware_version = "";
     m_PlayerInfo.software_version = kNWClient_PlayerFloatVersion * 10;
 

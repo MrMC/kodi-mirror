@@ -127,6 +127,7 @@ std::string GetDiskTotal(std::string path);
 std::string GetSystemUpTime();
 const std::string GetWiredMACAddress();
 const std::string GetWirelessMACAddress();
+const std::string GetNUCMACAddress();
 bool HasInternet();
 
 

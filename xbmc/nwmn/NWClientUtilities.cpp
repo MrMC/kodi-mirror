@@ -427,6 +427,21 @@ const std::string GetWirelessMACAddress()
   return "00:00:00:00:00:00";
 }
 
+const std::string GetNUCMACAddress()
+{
+
+  std::vector<CNetworkInterface*>& ifaces = CServiceBroker::GetNetwork().GetInterfaceList();
+  for (std::vector<CNetworkInterface*>::const_iterator it = ifaces.begin(); it != ifaces.end(); ++it)
+  {
+    std::string addy = (*it)->GetMacAddress();
+    if (StringUtils::StartsWithNoCase(addy,"1c:69:7a"))
+    {
+        return addy;
+    }
+  }
+  return CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
+}
+
 bool HasInternet()
 {
   XFILE::CCurlFile http;
