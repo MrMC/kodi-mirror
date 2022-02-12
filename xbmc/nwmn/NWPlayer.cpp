@@ -223,7 +223,7 @@ void CNWPlayer::Process()
             asset_lock.Leave();
 
             // now play the asset if valid (downloaded and md5 checked)
-            if (asset.valid)
+            if (asset.valid || isStreamed(asset))
             {
               #if ENABLE_NWPLAYER_DEBUGLOGS
               CLog::Log(LOGDEBUG, "**NW** - CNWPlayer::queue group(%s), asset(%s)", group->id, asset.id);

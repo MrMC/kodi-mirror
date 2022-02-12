@@ -131,6 +131,9 @@ void CNWMediaManager::UpdateNetworkStatus(bool hasNetwork)
 
 void CNWMediaManager::QueueAssetForDownload(NWAsset &asset)
 {
+  // do not download if its a stream
+  if (isStreamed(asset))
+    return;
   // check if this asset is already in the download list
   auto it = std::find_if(m_download.begin(), m_download.end(),
     [asset](const NWAsset &existingAsset) { return existingAsset.id == asset.id; });
@@ -148,6 +151,12 @@ void CNWMediaManager::QueueAssetForDownload(NWAsset &asset)
 
 bool CNWMediaManager::CheckAssetIsPresentLocal(NWAsset &asset)
 {
+  if (isStreamed(asset))
+  {
+    CSingleLock lock(m_assets_lock);
+    m_assets.push_back(asset);
+    return true;
+  }
   // check if we already have this asset on disk
   if (XFILE::CFile::Exists(asset.video_localpath))
   {

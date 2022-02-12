@@ -35,6 +35,8 @@
 #include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
 
+#include "platform/darwin/DarwinUtils.h"
+
 template <typename T>
 static std::string std_to_string(T value)
 {
@@ -430,6 +432,7 @@ const std::string GetWirelessMACAddress()
 const std::string GetNUCMACAddress()
 {
 
+//  CDarwinUtils::GetMacForAllInterfaces();
   std::vector<CNetworkInterface*>& ifaces = CServiceBroker::GetNetwork().GetInterfaceList();
   for (std::vector<CNetworkInterface*>::const_iterator it = ifaces.begin(); it != ifaces.end(); ++it)
   {
@@ -439,6 +442,7 @@ const std::string GetNUCMACAddress()
         return addy;
     }
   }
+
   return CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
 }
 
@@ -446,4 +450,10 @@ bool HasInternet()
 {
   XFILE::CCurlFile http;
   return http.IsInternet();
+}
+
+bool isStreamed(NWAsset &asset)
+{
+  asset.valid = true;
+  return true;
 }

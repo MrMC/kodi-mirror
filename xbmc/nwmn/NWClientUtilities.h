@@ -128,6 +128,7 @@ std::string GetSystemUpTime();
 const std::string GetWiredMACAddress();
 const std::string GetWirelessMACAddress();
 const std::string GetNUCMACAddress();
+bool isStreamed(NWAsset &asset);
 bool HasInternet();
 
 
