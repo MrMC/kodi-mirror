@@ -1144,7 +1144,7 @@ void CNWIoT::Process()
                 else if (event->State->View().GetString("playback") == "stop")
                   client->StopPlaying();
 
-                s_changeShadowValue(shadowClient, strThingName, "playback", event->State->View().GetString("playback"));
+                s_changeShadowValue(shadowClient, strThingName, "playback", "");
               }
               CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - Playback - %s", event->State->View().GetString("playback"));
             }
