@@ -1189,7 +1189,7 @@ void CNWIoT::Process()
                   String const& aws_s = event->State->View().GetString("forceFirmwareUpdateURL");
                   std::string s(aws_s.c_str(), aws_s.size());
                   updateURL = s;
-                  s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdateURL", event->State->View().GetString("forceFirmwareUpdateURL"));
+                  s_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdateURL", "");
 
                 }
                 client->CheckUpdate(updateURL);
