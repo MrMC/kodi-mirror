@@ -1175,6 +1175,7 @@ bool CNWClient::CreatePlaylist(std::string home, NWPlaylist &playList,
                 asset.available_to.SetFromDBDateTime(item.availability_to);
                 asset.available_from.SetFromDBDateTime(item.availability_from);
                 asset.video_basename = URIUtils::GetFileName(asset.video_url);
+                asset.stream = file.stream;
                 if (!isStreamed(asset))
                 {
                   std::string video_extension = URIUtils::GetExtension(asset.video_url);

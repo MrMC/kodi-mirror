@@ -209,6 +209,7 @@ bool LoadLocalPlaylist(std::string home, NWPlaylist &playList)
       XMLUtils::GetInt(   assetElement, "thumb_size", asset.thumb_size);
       XMLUtils::GetString(assetElement, "thumb_basename", asset.thumb_basename);
       XMLUtils::GetString(assetElement, "thumb_localpath", asset.thumb_localpath);
+      XMLUtils::GetBoolean(assetElement, "stream", asset.stream);
 
       std::string availability;
       XMLUtils::GetString(assetElement, "available_to", availability);
@@ -275,6 +276,7 @@ bool SaveLocalPlaylist(std::string home, const NWPlaylist &playList)
             XMLUtils::SetString(assetNode, "video_basename", asset.video_basename);
             XMLUtils::SetString(assetNode, "video_localpath", asset.video_localpath);
             XMLUtils::SetString(assetNode, "video_format", asset.type);
+            XMLUtils::SetBoolean(assetNode, "stream", asset.stream);
 
             XMLUtils::SetString(assetNode, "thumb_url", asset.thumb_url);
             XMLUtils::SetString(assetNode, "thumb_md5", asset.thumb_md5);
@@ -455,5 +457,5 @@ bool HasInternet()
 bool isStreamed(NWAsset &asset)
 {
   asset.valid = true;
-  return true;
+  return asset.stream;
 }

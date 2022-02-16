@@ -252,7 +252,7 @@ bool TVAPI_GetMachine(TVAPI_Machine &machine)
     {
       std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
       XFILE::CCurlFile curlfile;
-      curlfile.SetTimeout(10);
+      curlfile.SetTimeout(20);
       CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
       curl.SetProtocolOption("seekable", "0");
       curl.SetProtocolOption("Cache-Control", "no-cache");
@@ -265,7 +265,7 @@ bool TVAPI_GetMachine(TVAPI_Machine &machine)
       curl.SetOption("token", kTVAPI_URLENVOITOKEN);
       std::string strResponse;
       std::string testURL = curl.Get();
-      if (curlfile.Post(curl.Get(), "",strResponse))
+      if (curlfile.Get(curl.Get(),strResponse))
       {
         #if ENABLE_TVAPI_DEBUGLOGS
         CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
@@ -506,24 +506,21 @@ bool TVAPI_GetPlaylist(TVAPI_Playlist &playlist, std::string playlist_id)
     {
       std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
       XFILE::CCurlFile curlfile;
-      curlfile.SetTimeout(10);
-//      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
-//      curl.SetProtocolOption("seekable", "0");
-//      curl.SetProtocolOption("Cache-Control", "no-cache");
-//      curl.SetProtocolOption("Content-Type", "application/json");
-//      curl.SetOption("appname", "membernet");
-//      curl.SetOption("activity", "fetch");
-//      curl.SetOption("devicetype", "player");
-//      curl.SetOption("playBackUrls", "true");
-//      curl.SetOption("ethernetMACaddress", playerMACAddress);
-//      curl.SetOption("token", kTVAPI_URLENVOITOKEN);
-      CURL curl("https://google.com");
+      curlfile.SetTimeout(20);
+      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
+      curl.SetProtocolOption("seekable", "0");
+      curl.SetProtocolOption("Cache-Control", "no-cache");
+      curl.SetProtocolOption("Content-Type", "application/json");
+      curl.SetOption("appname", "membernet");
+      curl.SetOption("activity", "fetch");
+      curl.SetOption("devicetype", "player");
+      curl.SetOption("playBackUrls", "true");
+      curl.SetOption("ethernetMACaddress", playerMACAddress);
+      curl.SetOption("token", kTVAPI_URLENVOITOKEN);
       std::string strResponse;
       std::string testURL = curl.Get();
-//      if (curlfile.Post(curl.Get(), "",strResponse))
+      if (curlfile.Get(curl.Get(),strResponse))
       {
-
-        strResponse = "{\"statusCode\":200,\"result\":{\"data\":[{\"_id\":\"5f3aab89f698ae00085618ff\",\"machinename\":\"ametTest\",\"machinedescription\":\"amets testing player\",\"vendor\":\"SomeVendor\",\"purchasedate\":\"17/08/2020\",\"retaillocation\":\"NationwidePrime Media\",\"status\":\"active\",\"ethernetMACaddress\":\"98:01:A7:90:8C:BF\",\"devicetype\":\"player\",\"appname\":\"membernet\",\"created\":\"03-18-2021\",\"parentAppName\":\"membernet\",\"createdBy\":\"106501410495149356115\",\"modifiedBy\":[{\"userId\":\"106501410495149356115\",\"modified\":\"2020-08-17T16:08:46Z\"},{\"userId\":\"106501410495149356115\",\"modified\":\"2020-08-17T16:09:25.32Z\"}],\"updated\":\"2021-03-18T15:47:45.884Z\",\"hardwareversion\":\"1.0\",\"serialnumber\":\"345678\",\"playlists\":[{\"id\":\"ab43619a-5702-4daf-b8bd-a9a2c6413e3e\"}],\"playlist\":[{\"playlistname\":\"Sample Playlist\",\"_id\":\"5f3be362a287920019650611\",\"id\":\"ab43619a-5702-4daf-b8bd-a9a2c6413e3e\",\"name\":\"Sample Playlist\"}],\"playlistUrls\":[{\"assetid\":\"95523ED6-369B-4319-E208-592EDED9A56B\",\"m3u8_Url\":\"https://dfcdde9919f04fce8a4361271a42b5e7.7wzuvg.channel-assembly.mediatailor.us-east-1.amazonaws.com/v1/channel/envoi-channel-mediasigntv-5004/index.m3u8\",\"Mp4_proxy_URL\":\"\",\"playlistname\":\"Sample Playlist\"}]}],\"assetcount\":0,\"pageNumber\":0,\"assetTotal\":1}}";
 
         #if ENABLE_TVAPI_DEBUGLOGS
         CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
@@ -682,9 +679,8 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
     {
       std::string playerMACAddress = CServiceBroker::GetNetwork().GetFirstConnectedInterface()->GetMacAddress();
       XFILE::CCurlFile curlfile;
-      curlfile.SetTimeout(10);
-//      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
-      CURL curl("https://google.com");
+      curlfile.SetTimeout(20);
+      CURL curl(kTVAPI_URLBASEENVOI + "manageEncoders");
       curl.SetProtocolOption("seekable", "0");
       curl.SetProtocolOption("Cache-Control", "no-cache");
       curl.SetProtocolOption("Content-Type", "application/json");
@@ -696,12 +692,12 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
       curl.SetOption("token", kTVAPI_URLENVOITOKEN);
       std::string strResponse;
       std::string testURL = curl.Get();
-//      if (curlfile.Post(curl.Get(), "",strResponse))
+      if (curlfile.Get(curl.Get(),strResponse))
       {
         #if ENABLE_TVAPI_DEBUGLOGS
         CLog::Log(LOGDEBUG, "TVAPI_GetPlaylistItems %s", strResponse.c_str());
         #endif
-        strResponse = "{\"statusCode\":200,\"result\":{\"data\":[{\"_id\":\"5f3aab89f698ae00085618ff\",\"machinename\":\"ametTest\",\"machinedescription\":\"amets testing player\",\"vendor\":\"SomeVendor\",\"purchasedate\":\"17/08/2020\",\"retaillocation\":\"NationwidePrime Media\",\"status\":\"active\",\"ethernetMACaddress\":\"98:01:A7:90:8C:BF\",\"devicetype\":\"player\",\"appname\":\"membernet\",\"created\":\"03-18-2021\",\"parentAppName\":\"membernet\",\"createdBy\":\"106501410495149356115\",\"modifiedBy\":[{\"userId\":\"106501410495149356115\",\"modified\":\"2020-08-17T16:08:46Z\"},{\"userId\":\"106501410495149356115\",\"modified\":\"2020-08-17T16:09:25.32Z\"}],\"updated\":\"2021-03-18T15:47:45.884Z\",\"hardwareversion\":\"1.0\",\"serialnumber\":\"345678\",\"playlists\":[{\"id\":\"ab43619a-5702-4daf-b8bd-a9a2c6413e3e\"}],\"playlist\":[{\"playlistname\":\"Sample Playlist\",\"_id\":\"5f3be362a287920019650611\",\"id\":\"ab43619a-5702-4daf-b8bd-a9a2c6413e3e\",\"name\":\"Sample Playlist\"}],\"playlistUrls\":[{\"assetid\":\"95523ED6-369B-4319-E208-592EDED9A56B\",\"m3u8_Url\":\"https://dfcdde9919f04fce8a4361271a42b5e7.7wzuvg.channel-assembly.mediatailor.us-east-1.amazonaws.com/v1/channel/envoi-channel-mediasigntv-5004/index.m3u8\",\"Mp4_proxy_URL\":\"\",\"playlistname\":\"Sample Playlist\"}]}],\"assetcount\":0,\"pageNumber\":0,\"assetTotal\":1}}";
+
         CVariant reply;
         CJSONVariantParser::Parse(strResponse, reply);
 
@@ -742,10 +738,16 @@ bool TVAPI_GetPlaylistItems(TVAPI_PlaylistItems &playlistItems, std::string play
           TVAPI_PlaylistFile file;
 
           std::string tempURL;
-          if (!assetValues["Mp4_proxy_URL"].asString().empty())
+          if (assetValues["m3u8_Url"].asString().empty())
+          {
             tempURL = assetValues["Mp4_proxy_URL"].asString();
+            file.stream = false;
+          }
           else
+          {
             tempURL = assetValues["m3u8_Url"].asString();
+            file.stream = true;
+          }
 
           CURL curltemp(tempURL);
           curltemp.SetFileName(URIUtils::URLEncodePath(curltemp.GetFileName()));

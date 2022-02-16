@@ -189,6 +189,7 @@ typedef struct TVAPI_PlaylistFile {
   std::string mime_type;
   std::string created_date;
   std::string updated_date;
+  bool        stream;
 } TVAPI_PlaylistFile;
 
 typedef struct TVAPI_PlaylistItem {

@@ -88,6 +88,7 @@ typedef struct NWAsset {
 
   // runtime
   bool        valid;
+  bool        stream;
 } NWAsset;
 
 typedef struct NWGroup {
