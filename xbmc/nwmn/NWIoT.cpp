@@ -100,7 +100,9 @@
 #include <aws/iotshadow/UpdateShadowResponse.h>
 #include <aws/iotshadow/UpdateShadowSubscriptionRequest.h>
 
-static std::string strEndPoint = "a1l40foo64a71s-ats.iot.us-east-2.amazonaws.com";
+//static std::string strEndPoint = "a1l40foo64a71s-ats.iot.us-east-2.amazonaws.com";
+
+static std::string strEndPoint = "a2xxj2lq07qxu1-ats.iot.us-east-1.amazonaws.com";
 
 using namespace Aws::Crt;
 //using namespace Aws::Iotidentity;
@@ -243,8 +245,8 @@ CNWIoT::CNWIoT()
 {
   CLog::Log(LOGDEBUG, "**NW** - NW version %s", CSysInfo::GetVersionShort());
   CServiceBroker::GetAnnouncementManager()->AddAnnouncer(this);
-  strProvisionedKeyPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "private.pem.key");
-  strProvisionedCrtPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "certificate.pem.crt");
+  strProvisionedKeyPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "NW_private.pem.key");
+  strProvisionedCrtPath = CSpecialProtocol::TranslatePath("special://home/nwmn/" + kNWClient_CertPath + "NW_certificate.pem.crt");
   strPrivatePath        = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "provision-private.pem.key");
   strCertPath           = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "provision-certificate.pem.crt");
   strCAPath = CSpecialProtocol::TranslatePath("special://xbmc/system/" + kNWClient_CertPath + "root-CA.crt");
@@ -588,7 +590,7 @@ bool CNWIoT::DoAuthorize()
     }
     else
     {
-      CLog::Log(LOGINFO, "**MN** - CNWIoT::DoAuthorize() - Connection failed with error %d",returnCode);
+      CLog::Log(LOGINFO, "**MN** - CNWIoT::DoAuthorize() - Connection okay with %d",returnCode);
       connectionCompletedPromise.set_value(true);
     }
   };
@@ -604,14 +606,14 @@ bool CNWIoT::DoAuthorize()
     }
   };
 
-  Io::EventLoopGroup eventLoopGroup(1);
+  Io::EventLoopGroup eventLoopGroup(2);
   if (!eventLoopGroup)
   {
     CLog::Log(LOGINFO, "**MN** - CNWIoT::DoAuthorize() - Event Loop Group Creation failed with error %s",ErrorDebugString(eventLoopGroup.LastError()));
     return false;
   }
 
-  Io::DefaultHostResolver hostResolver(eventLoopGroup, 2, 30);
+  Io::DefaultHostResolver hostResolver(eventLoopGroup, 3, 30);
   Io::ClientBootstrap bootstrap(eventLoopGroup, hostResolver);
 
   if (!bootstrap)
@@ -933,8 +935,8 @@ void CNWIoT::Process()
 
   std::string strDTopic = "dt/envoi/events/MN_" + playerMACAddress;
   std::string strCMDTopic = "cmd/envoi/events/MN_" + playerMACAddress;
-  String dtopic(strDTopic.c_str());
-  String cmdtopic(strCMDTopic.c_str());
+  String dtopic(strDTopic.c_str(),strDTopic.size());
+  String cmdtopic(strCMDTopic.c_str(),strCMDTopic.size());
   String clientId(playerMACAddress.c_str());
   std::promise<bool> connectionCompletedPromise;
   std::promise<void> connectionClosedPromise;
@@ -990,7 +992,7 @@ void CNWIoT::Process()
       }
   };
 
-  Io::EventLoopGroup eventLoopGroup(1);
+  Io::EventLoopGroup eventLoopGroup(2);
   if (!eventLoopGroup)
   {
     CLog::Log(LOGINFO, "**MN** - CNWIoT::Process() - Event Loop Group Creation failed with error %s", ErrorDebugString(eventLoopGroup.LastError()));

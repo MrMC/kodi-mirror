@@ -1406,10 +1406,11 @@ bool CNWClient::DoAuthorize()
   }
   else
   {
-    if (!IsAuthorized())
-      return CNWIoT::GetInstance().DoAuthorize();
-    else
-      return true;
+    return true;
+//    if (!IsAuthorized())
+//      return CNWIoT::GetInstance().DoAuthorize();
+//    else
+//      return true;
   }
 
   CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Info, "Activation Failed/Cancelled", "", 4000, false);
