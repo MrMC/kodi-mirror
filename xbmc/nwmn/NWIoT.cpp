@@ -126,6 +126,9 @@ std::string strProvisionedCrtPath;
 String strThingName;
 std::shared_ptr<Mqtt::MqttConnection> connection;
 
+CVariant    location;
+int         sequence;
+
 static void s_changeShadowValue(
     Aws::Iotshadow::IotShadowClient &client,
     const String &thingName,
@@ -253,6 +256,7 @@ CNWIoT::CNWIoT()
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump provisioned %s %s", strProvisionedCrtPath, strProvisionedKeyPath);
   CLog::Log(LOGINFO, "**MN** - CNWIoT::CNWIoT() - dump private %s %s", strPrivatePath, strCertPath);
   m_heartbeatTimer.StartZero();
+  sequence = 0;
 }
 
 CNWIoT::~CNWIoT()
@@ -1424,6 +1428,9 @@ void CNWIoT::setPayload(std::string payload)
 
 void CNWIoT::notifyEvent(std::string type, CVariant details)
 {
+  // check if we have location
+  getLocation();
+
   CVariant payloadObject;
   CDateTime time = CDateTime::GetCurrentDateTime();
   std::string playerMACAddress = "NA";
@@ -1433,7 +1440,27 @@ void CNWIoT::notifyEvent(std::string type, CVariant details)
   payloadObject["type"] = type;
   payloadObject["timestamp"] = time.GetAsDBDateTime().c_str();
   payloadObject["details"] = details["details"];
+  payloadObject["session"] = location["session"];
+  payloadObject["sequenceNumber"] = sequence;
   std::string payloadStr;
   CJSONVariantWriter::Write(payloadObject, payloadStr, true);
   setPayload(payloadStr);
+  sequence += 1;
+}
+
+void CNWIoT::getLocation()
+{
+  if (location.isNull())
+  {
+    CURL url("https://utility.envoi.cloud/reflector/iot");
+    XFILE::CCurlFile curl;
+    curl.SetAcceptEncoding("gzip");
+    std::string strResponse;
+    if (curl.Get(url.Get(), strResponse))
+    {
+      CLog::Log(LOGDEBUG, "CNWIoT::getLocation() %s", strResponse.c_str());
+      CJSONVariantParser::Parse(strResponse, location);
+    }
+    std::string test;
+  }
 }
