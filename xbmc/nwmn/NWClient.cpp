@@ -357,7 +357,7 @@ void CNWClient::Startup(bool bypass_authorization, bool fetchAndUpdate)
   SendPlayerStatus(kTVAPI_Status_Restarting);
 
   m_Startup = true;
-  m_bypassDownloadWait = false;
+  m_bypassDownloadWait = true;
   m_StartupState = ClientFetchUpdatePlayer;
   if (!fetchAndUpdate)
   {
