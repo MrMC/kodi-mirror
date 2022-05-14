@@ -56,8 +56,9 @@ public:
 
 protected:
   void Process() override;
-  void                       getLocation();
+  void                       getLocation(bool force = false);
   static CCriticalSection    m_payloadLock;
+  static CCriticalSection    m_locationLock;
   std::vector<std::string>   m_payload;
   CStopWatch                 m_heartbeatTimer;
 

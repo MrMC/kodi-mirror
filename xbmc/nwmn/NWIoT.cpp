@@ -117,6 +117,7 @@ static const bool SHADOW_REBOOT_VALUE_DEFAULT = false;
 static const bool SHADOW_QUIT_VALUE_DEFAULT = false;
 
 CCriticalSection CNWIoT::m_payloadLock;
+CCriticalSection CNWIoT::m_locationLock;
 
 std::string strCAPath;
 std::string strCertPath;
@@ -310,7 +311,7 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
     }
     else if (message == "OnStop")
     {
-      if (data.isMember("end") && data["end"] == false)
+      if (data.isMember("end"))
       {
         #if ENABLE_NWIOT_DEBUGLOGS
         CLog::Log(LOGINFO, "**MN** - CNWIoT::Announce() - Playback stopped");
@@ -335,7 +336,10 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
         payloadObject["details"]["assetId"] = assetID;
         payloadObject["details"]["assetGroupID"] = data["assetGroupID"].asString();
         payloadObject["details"]["raw"] = payload;
-        notifyEvent("playbackStop", payloadObject);
+        if (data["end"] == false)
+          notifyEvent("playbackStop", payloadObject);
+        else
+          notifyEvent("playbackEnded", payloadObject);
       }
     }
     else if (message == "MNmsg")
@@ -371,6 +375,12 @@ void CNWIoT::Announce(ANNOUNCEMENT::AnnouncementFlag flag, const std::string &se
       payloadObject["details"]["assetID"] = data["assetID"].asString();
       payloadObject["details"]["raw"] = data["payload"].asString();
       notifyEvent("assetDownloaded", payloadObject);
+    }
+    else if (message == "MNactivationScreen")
+    {
+      CVariant payloadObject;
+      payloadObject["details"]["Activation Screen Active"] = data["active"];
+      notifyEvent("activationScreen", payloadObject);
     }
   }
 }
@@ -1203,9 +1213,16 @@ void CNWIoT::Process()
               else
                 b_changeShadowValue(shadowClient, strThingName, "forceFirmwareUpdate", false);
             }
+            if (event->State->View().ValueExists("recreateSession"))
+            {
+              if (event->State->View().GetBool("recreateSession"))
+              {
+                getLocation(true);
+                b_changeShadowValue(shadowClient, strThingName, "recreateSession", false);
+              }
+            }
             if (event->State->View().KeyExists("enableSSH"))
             {
-              s_changeShadowValue(shadowClient, strThingName, "enableSSH", event->State->View().GetString("enableSSH"));
               std::string enableSshConf = "/storage/.cache/services/sshd.conf";
               std::string disableSshConf = "/storage/.cache/services/sshd.disabled";
 #ifdef TARGET_DARWIN
@@ -1224,6 +1241,7 @@ void CNWIoT::Process()
                   sshFile.Close();
 
                   XFILE::CFile::Delete(disableSshConf);
+                  s_changeShadowValue(shadowClient, strThingName, "enableSSH", "1");
                 }
               }
               else
@@ -1236,6 +1254,7 @@ void CNWIoT::Process()
                   sshFile.Close();
 
                   XFILE::CFile::Delete(enableSshConf);
+                  s_changeShadowValue(shadowClient, strThingName, "enableSSH", "0");
                 }
               }
             }
@@ -1448,9 +1467,10 @@ void CNWIoT::notifyEvent(std::string type, CVariant details)
   sequence += 1;
 }
 
-void CNWIoT::getLocation()
+void CNWIoT::getLocation(bool force)
 {
-  if (location.isNull())
+  CSingleLock lock(m_locationLock);
+  if (location.isNull() || force)
   {
     CURL url("https://utility.envoi.cloud/reflector/iot");
     XFILE::CCurlFile curl;
@@ -1460,7 +1480,20 @@ void CNWIoT::getLocation()
     {
       CLog::Log(LOGDEBUG, "CNWIoT::getLocation() %s", strResponse.c_str());
       CJSONVariantParser::Parse(strResponse, location);
+      CDateTime time = CDateTime::GetCurrentDateTime();
+      time_t sinceEpoch;
+      time.GetAsTime(sinceEpoch);
+      std::string playerMACAddress = "NA";
+      if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
+        playerMACAddress = GetNUCMACAddress();
+      std::string ID = StringUtils::Format("%s-%i",playerMACAddress, sinceEpoch);
+      location["session"]["ID"] = ID;
+      CVariant payloadObject;
+      payloadObject["details"]["sessionID"] = ID;
+      if (force)
+        notifyEvent("sessionReCreated", payloadObject);
+      else
+        notifyEvent("sessionCreated", payloadObject);
     }
-    std::string test;
   }
 }

@@ -1343,9 +1343,13 @@ bool CNWClient::DoAuthorize()
 
     std::string code = "";
     const std::string header = "Enter Activation Code";
-
+    CVariant data(CVariant::VariantTypeObject);
+    data["active"] = true;
+    CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "MNactivationScreen", data);
     if (CGUIKeyboardFactory::ShowAndGetInput(code, CVariant{header}, false))
     {
+      data["active"] = false;
+      CServiceBroker::GetAnnouncementManager()->Announce(ANNOUNCEMENT::Player, "MNactivationScreen", data);
       size_t test_url_pos = code.find("test://");
       if (test_url_pos == std::string::npos)
         test_url_pos = code.find("TEST://");

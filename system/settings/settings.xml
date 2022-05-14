@@ -825,7 +825,7 @@
         </setting>
         <setting id="mn.apiversion" type="integer" label="20026" help="36115">
           <level>0</level>
-          <default>3</default>
+          <default>2</default>
           <control type="toggle" />
         </setting>      
       </group>
