@@ -1258,20 +1258,25 @@ void CNWIoT::Process()
                 }
               }
             }
-            if (event->State->View().ValueExists("apiVersion"))
+            if (event->State->View().KeyExists("apiVersion"))
             {
-              int apiVersion = event->State->View().GetInteger("apiVersion");
+              String apiVersion = event->State->View().GetString("apiVersion");
               CNWClient* client = CNWClient::GetClient();
               client->StopPlaying();
-              client->SetApiVersion(apiVersion);
+              if (apiVersion == "2")
+                client->SetApiVersion(2);
+              else
+                client->SetApiVersion(3);
               client->ClearLocalPlayer();
               client->ResetStartupState();
               client->Startup(false, false);
               
-              CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - apiVersion requested is %i", apiVersion);
+              CLog::Log(LOGINFO, "**MN** - CNWIoT::MsgReceived - apiVersion requested is %s", apiVersion);
 
-              Sleep(200);
-              i_changeShadowValue(shadowClient, strThingName, "apiVersion", client->GetApiVersion());
+              s_changeShadowValue(shadowClient, strThingName, "apiVersion", apiVersion);
+#ifndef TARGET_DARWIN
+              KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+#endif
             }
           }
         }
