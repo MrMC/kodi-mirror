@@ -1492,9 +1492,9 @@ void CNWIoT::getLocation(bool force)
       if (CServiceBroker::GetNetwork().GetFirstConnectedInterface())
         playerMACAddress = GetNUCMACAddress();
       std::string ID = StringUtils::Format("%s-%i",playerMACAddress, sinceEpoch);
-      location["session"]["ID"] = ID;
+      location["session"]["id"] = ID;
       CVariant payloadObject;
-      payloadObject["details"]["sessionID"] = ID;
+      payloadObject["details"]["sessionId"] = ID;
       if (force)
         notifyEvent("sessionReCreated", payloadObject);
       else
