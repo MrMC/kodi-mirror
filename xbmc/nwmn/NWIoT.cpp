@@ -1275,7 +1275,7 @@ void CNWIoT::Process()
 
               s_changeShadowValue(shadowClient, strThingName, "apiVersion", apiVersion);
 #ifndef TARGET_DARWIN
-              KODI::MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_RESTART);
+              system("/usr/bin/systemctl reboot");
 #endif
             }
           }
