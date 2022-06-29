@@ -1378,8 +1378,8 @@ bool CNWClient::DoAuthorize()
 
       if (code.find("NWMNDEMO4K") != std::string::npos)
       {
-        m_PlayerInfo.apiKey = "wAE/V6Gq3X3h0ZOjcK/A";
-        m_PlayerInfo.apiSecret = "dMLudiHXRKc18ZJXFk4o7pyhaSww41/kvnjbmc4L";
+        m_PlayerInfo.apiKey = "b+aZP4f2ZICSmF0mgajm";
+        m_PlayerInfo.apiSecret = "YektxI1viRSGdAJj9iMAYPtzOLjtdtx3GyLhUXjn";
         TVAPI_SetURLBASE(kTVAPI_URLBASE);
         SaveLocalPlayer(m_strHome, m_PlayerInfo);
         return true;
@@ -1387,8 +1387,8 @@ bool CNWClient::DoAuthorize()
       else if (code.find("NWMNDEMO") != std::string::npos)
       {
         // special case for code of 'NWMNDEMO'
-        m_PlayerInfo.apiKey = "LbpCC91TBDsoHExRxvtV";
-        m_PlayerInfo.apiSecret = "RN16RS1PUZVt8xgW+URBjU0o/ZXcdLWUDA45v2qQ";
+        m_PlayerInfo.apiKey = "UWakY5A3fPBK7EFjwwLv";
+        m_PlayerInfo.apiSecret = "LNadLXpkhiIszX2owgd1fvVylLzArxcmdZmY9QKC";
         TVAPI_SetURLBASE(kTVAPI_URLBASE_TESTSITE);
         SaveLocalPlayer(m_strHome, m_PlayerInfo);
         return true;
